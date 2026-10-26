@@ -26,9 +26,15 @@ It reads [`START-HERE.md`](START-HERE.md), runs SliceCheck's checks in its own c
 
 ## Why it exists
 
-I built the first version for my own team's peer reviews. We already had an AI review agent, so I tested both on the same live ticket. Theirs came back with an eight-section report, wrong findings, and advice nobody asked for. Mine came back with no false positives and a verdict you could read in five seconds. A teammate asked for my prompt that week.
+I originally built SliceCheck to help with peer reviews on my own team. 
 
-The difference wasn't a smarter model. It was deciding up front what *doesn't* count as a problem. Noise is what makes people stop trusting a review tool, so in SliceCheck, **Ignore is a first-class bucket**.
+At the time, we were reviewing tickets manually, and I saw an opportunity to use AI to make the process faster and more consistent.
+
+I put together an AI-powered prompt that checked tickets against a set of review rules and presented the findings in a clean, color-coded widget, with issues grouped by severity and a verdict you could read in 5 seconds.
+
+That experience helped shape SliceCheck. I realized that a good review tool needs to know not only what to flag, but also what to ignore.
+
+The goal isn't to find something wrong with every ticket. It's to help teams catch what matters without getting buried in unnecessary feedback.
 
 ## How it works
 
