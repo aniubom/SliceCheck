@@ -4,16 +4,13 @@
 
 AI peer review for requirements: user stories and acceptance criteria, sorted into **Must Fix**, **Heads Up**, and **Ignore**.
 
-Paste a ticket into your AI and say **"peer review this."** You get back one clean review:
+Paste a ticket into your AI and say **"peer review this."** You get back one clean review (this is [sample ticket 07](examples/07-untestable-ac-typos-jira.md)):
 
 > **SliceCheck review**
 >
 > 🔴 **Must Fix**
 > - **MF-05 · Acceptance criteria:** "should be user friendly" has no pass/fail outcome.
-> - **MF-06 · User story:** typo, "maintanence".
->
-> 🟡 **Heads Up**
-> - **HU-03 · Acceptance criteria:** numbering starts at AC-2.
+> - **MF-06 · User story and AC:** typos, "maintanence" and "intutive".
 >
 > ✅ **Good:** Problem statement, Estimate, Assignee
 >
