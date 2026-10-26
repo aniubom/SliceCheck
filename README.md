@@ -49,7 +49,7 @@ SliceCheck runs inside the AI you already use. Set it up once, then just paste t
 
 **2. As an MCP server (Claude Desktop, Claude Code, VS Code Copilot, Cursor).** Adds `check_ticket`, `verify_review` and `get_rules` as tools in your chat. Setup: [`mcp/README.md`](mcp/README.md).
 
-**3. Microsoft 365 Copilot or ChatGPT at work.** Build a SliceCheck agent once, with no install and no IT ticket for a personal agent (your company's settings decide what's available). After that, open the agent and paste tickets. It runs the same checks and verifies itself using the built-in code tool, and tickets stay inside the AI your company already approved.
+**3. Microsoft 365 Copilot or ChatGPT at work.** Build a SliceCheck agent once, with no install and no IT ticket for a personal agent (your company's settings decide what's available). After that, open the agent and paste tickets. It runs the same checks and verifies itself using the built-in code tool.
 - Copilot (Agent Builder): [`kits/copilot/SETUP.md`](kits/copilot/SETUP.md)
 - ChatGPT (Custom GPT): [`kits/chatgpt/SETUP.md`](kits/chatgpt/SETUP.md)
 
