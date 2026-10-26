@@ -12,7 +12,7 @@ import { fileURLToPath } from "node:url";
 import yaml from "js-yaml";
 import { parseTicket } from "../src/parse.js";
 import { checkTicket } from "../src/check.js";
-import { buildPrompt } from "../src/prompt.js";
+import { buildPrompt, buildStandalonePrompt } from "../src/prompt.js";
 import { verifyReview } from "../src/verify.js";
 
 const args = process.argv.slice(2);
@@ -27,6 +27,11 @@ const json = args.includes("--json");
 if (json) args.splice(args.indexOf("--json"), 1);
 const rulesArg = flag("--rules");
 const [cmd, ticketPath, reviewPath] = args;
+if (cmd === "standalone") {
+  const rp = rulesArg || (fs.existsSync("rules.yaml") ? "rules.yaml" : path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "rules.yaml"));
+  console.log(buildStandalonePrompt(yaml.load(fs.readFileSync(rp, "utf8"))));
+  process.exit(0);
+}
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const rulesPath =
@@ -38,6 +43,7 @@ function usage(code = 1) {
   slicecheck check  <ticket-file>                  code findings only
   slicecheck prompt <ticket-file>                  full review prompt for any AI
   slicecheck verify <ticket-file> <review-file>    check an AI review against the rules
+  slicecheck standalone                            one-time prompt for Copilot/ChatGPT (no scripts)
 
   Options: --rules <path>   --json`);
   process.exit(code);

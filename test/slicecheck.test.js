@@ -67,3 +67,9 @@ VERDICT
   assert.ok(res.problems.some((p) => p.includes("Dropped a code finding")));
   assert.ok(res.problems.some((p) => p.includes("Verdict contradicts")));
 });
+
+test("copilot-prompt.md matches rules.yaml", async () => {
+  const { buildStandalonePrompt } = await import("../src/prompt.js");
+  assert.ok(fs.readFileSync("copilot-prompt.md", "utf8").includes(buildStandalonePrompt(rules)),
+    "copilot-prompt.md is out of date: regenerate it with `node bin/slicecheck.mjs standalone`");
+});

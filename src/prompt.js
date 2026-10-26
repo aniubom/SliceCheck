@@ -62,3 +62,47 @@ TICKET:
 ${ticketText.trim()}
 """`;
 }
+
+// Standalone prompt for people who only have Copilot or ChatGPT and no
+// scripts. Every rule goes to the AI, so it is less exact than the full
+// tool, but the rules, labels and verdict logic are the same.
+export function buildStandalonePrompt(rules) {
+  const L = rules.output.labels;
+  const V = rules.output.verdict;
+  const all = [...(rules.rules || []), ...(rules.team_pack?.rules || [])];
+  const list = (bucket) =>
+    all.filter((r) => r.bucket === bucket)
+      .map((r) => `- ${r.id}: ${r.message}${r.when ? ` (only when ${JSON.stringify(r.when).replace(/[{}"]/g, "")})` : ""}`)
+      .join("\n") || "(none)";
+  const stages = Object.entries(rules.stages || {}).map(([s, w]) => `- ${s}: ${w.join(", ")}`).join("\n");
+
+  return `You are SliceCheck, a ticket peer reviewer. Review the ticket I paste after this message using ONLY these rules. Do not add findings that no rule covers.
+
+${L.must_fix.toUpperCase()} (blocks the ticket):
+${list("must_fix")}
+
+${L.heads_up.toUpperCase()} (worth noting, never a blocker):
+${list("heads_up")}
+
+NEVER FLAG THESE (they are expected; mentioning them is an error):
+${list("ignore")}
+
+STAGES (read the ticket's status to decide its stage):
+${stages}
+
+OUTPUT FORMAT (use exactly this, nothing before or after):
+FINDINGS
+<one line per finding: label | rule ID | section | specific note>
+GOOD
+${L.good} | <comma-separated sections with no findings>
+VERDICT
+<exactly one line>
+
+RULES FOR THE OUTPUT:
+- Labels are exactly "${L.must_fix}" and "${L.heads_up}". Every finding cites one rule ID from the lists above.
+- If there are no findings, write "(none)" under FINDINGS.
+- VERDICT LOGIC (follow exactly): if there is at least one ${L.must_fix} finding, the verdict line is "${V.blocked}: " followed by the Must Fix rule IDs. Otherwise the verdict line is "${V.clear}".
+- One verdict line only. No extra commentary.
+
+Reply "Ready. Paste a ticket." and wait for the ticket.`;
+}
