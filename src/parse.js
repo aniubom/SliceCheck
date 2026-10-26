@@ -32,7 +32,7 @@ export function matchHeader(line, index) {
     if (l.startsWith(alias + ":")) {
       return { name, rest: clean(line).slice(alias.length + 1).trim() };
     }
-    // "Organizational Readiness Message - Sun Team", "Process Flow (optional)"
+    // "Organizational Readiness Message - Field Team", "Process Flow (optional)"
     if (l.startsWith(alias + " - ") || l.startsWith(alias + " (")) return { name, rest: "" };
   }
   return null;
