@@ -1,6 +1,6 @@
 # SliceCheck for ChatGPT (Custom GPT)
 
-Build once, then just paste tickets. Tickets stay inside your ChatGPT workspace.
+Build once, then just paste tickets. SliceCheck runs its checks using ChatGPT's code tool. Ticket content is processed by ChatGPT, not kept local to SliceCheck. How it is handled depends on your account, settings, and the policies that apply. Follow your organization's data-handling rules and only submit tickets you're authorized to share with ChatGPT.
 
 You need: a ChatGPT plan that lets you create GPTs, and the three files in this folder: `instructions.txt`, `slicecheck.py` and `rules.json`.
 
