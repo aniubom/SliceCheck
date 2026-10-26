@@ -1,10 +1,11 @@
 name: release
-# Push a version tag (for example v1.0.0) to publish a GitHub Release with the
-# skill and setup kits attached. Download links in the README point to the
+# Publishes a GitHub Release with the skill and setup kits attached whenever
+# main has a version (package.json) that hasn't been released yet. To release:
+# bump "version" in package.json and push. README download links point to the
 # latest release, so they stay current.
 on:
   push:
-    tags: ["v*"]
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: write
@@ -13,18 +14,35 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Find version
+        id: v
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v$(node -p "require('./package.json').version")"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          if gh release view "$TAG" >/dev/null 2>&1; then echo "new=false" >> "$GITHUB_OUTPUT"; else echo "new=true" >> "$GITHUB_OUTPUT"; fi
+      - name: Remove old exports branch
+        run: git push origin --delete exports || true
+      - if: steps.v.outputs.new == 'true'
+        uses: actions/setup-node@v4
         with:
           node-version: 22
-      - uses: actions/setup-python@v5
+      - if: steps.v.outputs.new == 'true'
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: npm ci
-      - run: npm run build:skill
+      - if: steps.v.outputs.new == 'true'
+        run: npm ci
+      - if: steps.v.outputs.new == 'true'
+        run: npm run build:skill
       - name: Generated files are up to date
+        if: steps.v.outputs.new == 'true'
         run: git diff --exit-code
-      - run: npm test
+      - if: steps.v.outputs.new == 'true'
+        run: npm test
       - name: Package
+        if: steps.v.outputs.new == 'true'
         run: |
           set -euo pipefail
           mkdir -p dist
@@ -32,15 +50,10 @@ jobs:
           (cd kits/chatgpt && zip -qr "$GITHUB_WORKSPACE/dist/slicecheck-chatgpt-kit.zip" .)
           (cd kits/copilot && zip -qr "$GITHUB_WORKSPACE/dist/slicecheck-copilot-kit.zip" .)
       - name: Publish release
+        if: steps.v.outputs.new == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          TAG="${GITHUB_REF_NAME}"
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" dist/*.zip --clobber
-          else
-            gh release create "$TAG" dist/*.zip --title "SliceCheck $TAG" --notes-file .github/release-notes.md
-          fi
-      - name: Remove old exports branch
-        run: git push origin --delete exports || true
+          TAG="${{ steps.v.outputs.tag }}"
+          gh release create "$TAG" dist/*.zip --target "$GITHUB_SHA" --title "SliceCheck $TAG" --notes-file .github/release-notes.md
