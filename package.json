@@ -4,14 +4,17 @@
   "description": "Ticket peer review, minus the noise.",
   "type": "module",
   "bin": {
-    "slicecheck": "bin/slicecheck.mjs"
+    "slicecheck": "bin/slicecheck.mjs",
+    "slicecheck-mcp": "mcp/server.mjs"
   },
   "scripts": {
     "test": "node --test test/*.test.js",
     "build:skill": "node scripts/build-skill.mjs"
   },
   "dependencies": {
-    "js-yaml": "^4.1.0"
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "js-yaml": "^4.1.0",
+    "zod": "^4.6.7"
   },
   "license": "MIT",
   "devDependencies": {
