@@ -14,10 +14,12 @@ const runtime = candidates.find(([command, args]) => {
 });
 if (!runtime) throw new Error("Python 3 is required for the tests. Install it or set PYTHON to its executable.");
 
+export const normalizeNewlines = (text) => text.replace(/\r\n?/g, "\n");
+
 export function runPython(args, options = {}) {
-  return execFileSync(runtime[0], [...runtime[1], ...args], {
+  return normalizeNewlines(execFileSync(runtime[0], [...runtime[1], ...args], {
     ...options, env: { ...env, ...options.env }, encoding: "utf8",
-  }).replace(/\r\n?/g, "\n");
+  }));
 }
 
 export function withTempDir(fn) {

@@ -34,6 +34,8 @@ const add = (name, text, written, passed, customRules = rules) =>
 
 add("clean review", clean, review([], "Problem statement, User story, AC"), true);
 add("real code findings", inDev, review(codeLines(inDev), "Problem statement, User story"), true);
+add("CRLF tickets and reviews", inDev.replace(/\r?\n/g, "\r\n"),
+  review(codeLines(inDev), "Problem statement, User story").replace(/\n/g, "\r\n"), true);
 add("invented Must Fix code finding", clean, review([finding("MF-01", "Problem statement")], "Assignee", ["MF-01"]), false);
 add("invented Heads Up code finding", clean, review([finding("HU-01", "Estimate")]), false);
 add("code finding whose stage condition is false", clean, review([finding("HU-02", "Assignee")], "Problem statement"), false);

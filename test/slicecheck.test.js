@@ -7,11 +7,11 @@ import { parseTicket } from "../src/parse.js";
 import { checkTicket } from "../src/check.js";
 import { buildPrompt } from "../src/prompt.js";
 import { verifyReview } from "../src/verify.js";
-import { runPython, withTempDir } from "./helpers/runtime.js";
+import { normalizeNewlines, runPython, withTempDir } from "./helpers/runtime.js";
 
 const rules = yaml.load(fs.readFileSync("rules.yaml", "utf8"));
 const expected = yaml.load(fs.readFileSync("examples/expected.yaml", "utf8"));
-const read = (f) => fs.readFileSync(`examples/${f}`, "utf8");
+const read = (f) => normalizeNewlines(fs.readFileSync(`examples/${f}`, "utf8"));
 const run = (text, r = rules) => checkTicket(parseTicket(text, r), r);
 
 for (const [file, exp] of Object.entries(expected)) {
@@ -72,7 +72,7 @@ VERDICT
 
 test("copilot-prompt.md matches rules.yaml", async () => {
   const { buildStandalonePrompt } = await import("../src/prompt.js");
-  assert.ok(fs.readFileSync("copilot-prompt.md", "utf8").includes(buildStandalonePrompt(rules)),
+  assert.ok(normalizeNewlines(fs.readFileSync("copilot-prompt.md", "utf8")).includes(buildStandalonePrompt(rules)),
     "copilot-prompt.md is out of date: regenerate it with `node bin/slicecheck.mjs standalone`");
 });
 
@@ -139,7 +139,8 @@ test("every instruction file carries the same rulebook", async () => {
   const { fillTarget } = await import("../scripts/fill.mjs");
   const targets = JSON.parse(fs.readFileSync("scripts/templates/targets.json", "utf8"));
   for (const [file, t] of Object.entries(targets)) {
-    assert.equal(fs.readFileSync(file, "utf8"), fillTarget(t), `${file} is out of date: run npm run build:skill`);
+    assert.equal(normalizeNewlines(fs.readFileSync(file, "utf8")), normalizeNewlines(fillTarget(t)),
+      `${file} is out of date: run npm run build:skill`);
   }
   // The rulebook itself never names an engine path: those come only from targets.json.
   const block = fs.readFileSync("scripts/templates/rules-block.md", "utf8");
