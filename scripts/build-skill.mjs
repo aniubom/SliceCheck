@@ -33,11 +33,13 @@ fs.copyFileSync("python/rules.json", "kits/copilot/rules.json.txt");
 // One rulebook, generated into every instruction file so they can never disagree.
 const block = fs.readFileSync("scripts/templates/rules-block.md", "utf8").trim();
 const fill = (tpl, v) =>
-  tpl.replace("{BLOCK}", block).replace(/\{(PY|CMD|RULES|FILES)\}/g, (_, k) => v[k]);
+  tpl.replace("{BLOCK}", block).replace(/\{(PY|CMD|RULES|FILES|NODECMD|NODEFILE)\}/g, (_, k) => v[k]);
 const tpl = (f) => fs.readFileSync(`scripts/templates/${f}`, "utf8");
-fs.writeFileSync("START-HERE.md", fill(tpl("START-HERE.md"), { PY: "python3", CMD: "python3 slicecheck.py", RULES: "rules.json" }));
-fs.writeFileSync(`${out}/SKILL.md`, fill(tpl("SKILL.md"), { PY: "python3", CMD: "python3 scripts/slicecheck.py", RULES: "scripts/rules.json" }));
-const kit = { PY: "python", CMD: "python slicecheck.py", RULES: "rules.json" };
+fs.writeFileSync("START-HERE.md", fill(tpl("START-HERE.md"), { PY: "python3", CMD: "python3 slicecheck.py", RULES: "rules.json",
+  NODECMD: "node skills/slicecheck/scripts/slicecheck.mjs", NODEFILE: "skills/slicecheck/scripts/slicecheck.mjs" }));
+fs.writeFileSync(`${out}/SKILL.md`, fill(tpl("SKILL.md"), { PY: "python3", CMD: "python3 scripts/slicecheck.py", RULES: "scripts/rules.json",
+  NODECMD: "node scripts/slicecheck.mjs", NODEFILE: "scripts/slicecheck.mjs" }));
+const kit = { PY: "python", CMD: "python slicecheck.py", RULES: "rules.json", NODECMD: "node slicecheck.mjs", NODEFILE: "slicecheck.mjs" };
 fs.writeFileSync("kits/chatgpt/instructions.txt", fill(tpl("kit-instructions.txt"), { ...kit,
   FILES: "- slicecheck.py: the SliceCheck engine (Python, standard library only).\n- rules.json: the review rules. They decide everything." }));
 fs.writeFileSync("kits/copilot/instructions.txt", fill(tpl("kit-instructions.txt"), { ...kit,

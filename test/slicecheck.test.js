@@ -141,7 +141,7 @@ test("every instruction file carries the same rulebook", () => {
   const files = ["START-HERE.md", "skills/slicecheck/SKILL.md", "kits/chatgpt/instructions.txt", "kits/copilot/instructions.txt"];
   const norm = (t) => t.slice(t.indexOf("RULE 1."), t.indexOf("outside the review.") + 19)
     .replace(/python3? (scripts\/)?slicecheck\.py/g, "CMD").replace(/python3? --version/g, "PY --version")
-    .replace(/(scripts\/)?rules\.json/g, "RULES");
+    .replace(/(scripts\/)?rules\.json/g, "RULES").replace(/node \S*slicecheck\.mjs/g, "NODECMD").replace(/\S*slicecheck\.mjs/g, "NODEFILE");
   const blocks = files.map((f) => norm(fs.readFileSync(f, "utf8")));
   for (const b of blocks) assert.equal(b, blocks[0]);
 });

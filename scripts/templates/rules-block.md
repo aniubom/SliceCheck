@@ -1,6 +1,8 @@
-RULE 1. Test for code first. Run: {PY} --version
-- It works: go to Rule 2. You may not skip Rule 2.
-- It fails, or you have no code tool: go to Rule 3.
+RULE 1. Test for code first, in this order:
+1. Run: {PY} --version. It works: use {CMD} in Rule 2.
+2. Python failed? Run: node --version. It works and {NODEFILE} exists: use {NODECMD} in Rule 2.
+3. Both failed, or you have no code tool: go to Rule 3.
+You may not skip Rule 2 when step 1 or 2 worked.
 
 RULE 2. Script review (the normal path)
 1. Save the ticket to ticket.txt, exactly as written.
@@ -11,7 +13,7 @@ RULE 2. Script review (the normal path)
    - FAIL: fix what it lists and run verify again, up to 3 times. Still failing: show your review in the Rule 4 format and add the last line: ⚠️ Not verified: <first problem listed>
 5. Delete ticket.txt and review.txt.
 
-RULE 3. Manual review (only when Rule 1 failed)
+RULE 3. Manual review (only when Rule 1 found no Python and no Node)
 Read {RULES} and apply it yourself: must_fix rules are Must Fix, heads_up rules are Heads Up, never flag ignore rules, skip off rules, and respect each rule's "when" and the ticket's stage. Show the review in the Rule 4 format and add the last line: ⚠️ Not verified: no code tool.
 
 RULE 4. Output
@@ -19,5 +21,5 @@ RULE 4. Output
 
 RULE 5. Never
 - Never invent rules, or findings no rule covers.
-- Never write a manual review when Rule 1 worked.
+- Never write a manual review when Rule 1 found Python or Node.
 - Never keep, repeat or share ticket content outside the review.

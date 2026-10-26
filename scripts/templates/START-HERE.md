@@ -4,7 +4,7 @@ You are running **SliceCheck**: ticket peer review, minus the noise. The user wa
 
 ## Files
 
-Save these two files from this repo into your working folder, side by side: `python/slicecheck.py` (the engine) and `python/rules.json` (the rules). If you're reading the repo through GitHub or the web, load them into your code tool. Nothing needs installing.
+Save these two files from this repo into your working folder, side by side: `python/slicecheck.py` (the engine) and `python/rules.json` (the rules). If you're reading the repo through GitHub or the web, load them into your code tool. Nothing needs installing. The Node engine, used only if Python isn't available, is `skills/slicecheck/scripts/slicecheck.mjs` (it reads `skills/slicecheck/rules.yaml`).
 
 ## Rules
 

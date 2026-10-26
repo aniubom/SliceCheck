@@ -5,7 +5,7 @@ description: Ticket peer review, minus the noise. Reviews a user story or ticket
 
 # SliceCheck
 
-Follow these rules exactly. Paths are relative to this skill's folder. Nothing to install. If Python isn't available but Node is, use `node scripts/slicecheck.mjs` in place of `python3 scripts/slicecheck.py`.
+Follow these rules exactly. Paths are relative to this skill's folder. Nothing to install.
 
 ## Rules
 
