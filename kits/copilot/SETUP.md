@@ -23,7 +23,7 @@ Copilot only accepts certain file types as knowledge (.txt is one), so the engin
 
 Paste a sample ticket from the repo's `examples/` folder, for example `07-untestable-ac-typos-jira.md`. A correct result has Must Fix findings MF-05 and MF-06 and the verdict "🔴 Needs attention before refinement". Every sample's expected result is in `examples/expected.yaml`.
 
-**What to watch for:** if the review ends with "wasn't verified", the code interpreter couldn't run the uploaded engine. The agent still reviews with your rules, just without the code checks and verification. Note this when you test; it tells us whether Copilot's code interpreter can use uploaded knowledge files.
+**If the review ends with "wasn't verified":** the code interpreter didn't run the uploaded engine. Check that **Create documents, charts, and code** is on and both `.txt` files are uploaded. Some company settings limit what the code interpreter can do. In that case the agent still reviews with your rules, just without the automatic checks and verification.
 
 ## Your team's rules
 

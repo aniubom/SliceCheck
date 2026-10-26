@@ -42,6 +42,6 @@ The server uses, in order:
 
 Rules are re-read on every review, so edits apply right away.
 
-## Not yet supported
+## ChatGPT and Microsoft 365 Copilot
 
-ChatGPT and Microsoft Copilot Studio connect to MCP servers over the web, not on your machine. That needs a hosted version, which means tickets would leave your machine. It's planned, with a self-hosting option for teams.
+These apps connect to MCP servers over the web, not on your machine, so this local server doesn't work with them. Use the ready-made kits instead: [`kits/chatgpt`](../kits/chatgpt/SETUP.md) and [`kits/copilot`](../kits/copilot/SETUP.md). They run the same engine inside each app's own code tool.
