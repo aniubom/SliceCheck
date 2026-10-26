@@ -2,7 +2,7 @@
 // SliceCheck MCP server.
 // Lets any MCP-capable AI (Claude, ChatGPT, VS Code Copilot, Copilot Studio,
 // Cursor...) run SliceCheck as tools inside the chat. Runs on the user's own
-// machine over stdio, so tickets never leave it.
+// machine over stdio. The ticket still goes to the AI app that calls it.
 //
 // Rules: SLICECHECK_RULES env var, else ./slicecheck.rules.yaml in the working
 // folder, else the default rules.yaml shipped with SliceCheck.

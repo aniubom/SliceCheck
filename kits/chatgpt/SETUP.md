@@ -17,7 +17,7 @@ You need: a ChatGPT plan that lets you create GPTs, and the three files in this 
 
 ## Test it
 
-Paste a sample ticket from the repo's `examples/` folder, for example `07-untestable-ac-typos-jira.md`. A correct result has Must Fix findings MF-05 and MF-06 and the verdict "🔴 Needs attention before refinement". Check `examples/expected.yaml` for every sample's expected result.
+Paste a sample ticket from the repo's `examples/` folder, for example `07-untestable-ac-typos-jira.md`. A correct result has Must Fix findings MF-05 and MF-06 and the verdict "🔴 Needs attention: MF-05, MF-06". Check `examples/expected.yaml` for every sample's expected result.
 
 If you get "SliceCheck couldn't run here" instead of a review, the code tool didn't run the scripts. Check that Code Interpreter is on and both files are uploaded.
 

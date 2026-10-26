@@ -8,7 +8,7 @@
     },
     "verdict": {
       "clear": "✅ Clear to proceed",
-      "blocked": "🔴 Needs attention before refinement"
+      "blocked": "🔴 Needs attention"
     },
     "cite_rule_ids": true
   },
@@ -289,7 +289,7 @@
       "by": "code",
       "section": "acceptance_criteria",
       "check": "sequential",
-      "message": "AC numbering has a gap (for example, it starts at AC-2)."
+      "message": "AC numbering has a gap."
     },
     {
       "id": "HU-04",

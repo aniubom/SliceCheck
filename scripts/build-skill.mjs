@@ -1,8 +1,9 @@
 // Builds the self-contained skill folder: skills/slicecheck/
-// One bundled script (no npm install needed) plus a copy of the default rules.
+// One bundled script and the Python engine (no install needed) plus rules.json.
 import { build } from "esbuild";
 import fs from "node:fs";
 import yaml from "js-yaml";
+import { fillTarget } from "./fill.mjs";
 
 const out = "skills/slicecheck";
 fs.mkdirSync(`${out}/scripts`, { recursive: true });
@@ -18,7 +19,7 @@ await build({
   legalComments: "inline",
 });
 
-fs.copyFileSync("rules.yaml", `${out}/rules.yaml`);
+fs.rmSync(`${out}/rules.yaml`, { force: true });
 
 // Python engine (for ChatGPT / Copilot / Claude.ai code sandboxes) reads JSON.
 fs.writeFileSync("python/rules.json", JSON.stringify(yaml.load(fs.readFileSync("rules.yaml", "utf8")), null, 2) + "\n");
@@ -31,17 +32,6 @@ fs.copyFileSync("python/rules.json", "kits/chatgpt/rules.json");
 fs.copyFileSync("python/slicecheck.py", "kits/copilot/slicecheck.py.txt"); // Copilot knowledge accepts .txt
 fs.copyFileSync("python/rules.json", "kits/copilot/rules.json.txt");
 // One rulebook, generated into every instruction file so they can never disagree.
-const block = fs.readFileSync("scripts/templates/rules-block.md", "utf8").trim();
-const fill = (tpl, v) =>
-  tpl.replace("{BLOCK}", block).replace(/\{(PY|CMD|RULES|FILES|NODECMD|NODEFILE)\}/g, (_, k) => v[k]);
-const tpl = (f) => fs.readFileSync(`scripts/templates/${f}`, "utf8");
-fs.writeFileSync("START-HERE.md", fill(tpl("START-HERE.md"), { PY: "python3", CMD: "python3 slicecheck.py", RULES: "rules.json",
-  NODECMD: "node skills/slicecheck/scripts/slicecheck.mjs", NODEFILE: "skills/slicecheck/scripts/slicecheck.mjs" }));
-fs.writeFileSync(`${out}/SKILL.md`, fill(tpl("SKILL.md"), { PY: "python3", CMD: "python3 scripts/slicecheck.py", RULES: "scripts/rules.json",
-  NODECMD: "node scripts/slicecheck.mjs", NODEFILE: "scripts/slicecheck.mjs" }));
-const kit = { PY: "python", CMD: "python slicecheck.py", RULES: "rules.json", NODECMD: "node slicecheck.mjs", NODEFILE: "slicecheck.mjs" };
-fs.writeFileSync("kits/chatgpt/instructions.txt", fill(tpl("kit-instructions.txt"), { ...kit,
-  FILES: "- slicecheck.py: the SliceCheck engine (Python, standard library only).\n- rules.json: the review rules. They decide everything." }));
-fs.writeFileSync("kits/copilot/instructions.txt", fill(tpl("kit-instructions.txt"), { ...kit,
-  FILES: "- slicecheck.py.txt and rules.json.txt. Before Rule 1, save copies named slicecheck.py and rules.json in your working folder." }));
+const targets = JSON.parse(fs.readFileSync("scripts/templates/targets.json", "utf8"));
+for (const [file, t] of Object.entries(targets)) fs.writeFileSync(file, fillTarget(t));
 console.log("Built skills/slicecheck, python/rules.json, kits/ and START-HERE.md");

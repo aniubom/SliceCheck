@@ -3,6 +3,8 @@
 // that works in Copilot, ChatGPT or Claude. The rules travel with every run,
 // so nothing depends on the AI remembering them.
 
+import { findingText } from "./check.js";
+
 const listSections = (s) => (Array.isArray(s) ? s : [s]).map((n) => n.replace(/_/g, " ")).join(", ");
 
 export function buildPrompt(ticketText, result, rules) {
@@ -11,7 +13,7 @@ export function buildPrompt(ticketText, result, rules) {
 
   const codeLines = result.findings.length
     ? result.findings
-        .map((f) => `${L[f.bucket]} | ${f.id} | ${f.section} | ${f.message} (${f.detail})`)
+        .map((f) => `${L[f.bucket]} | ${f.id} | ${f.section} | ${findingText(f)}`)
         .join("\n")
     : "(none)";
 

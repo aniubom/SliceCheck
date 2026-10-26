@@ -1,0 +1,25 @@
+{
+  "START-HERE.md": {
+    "template": "START-HERE.md",
+    "PY": "python3", "CMD": "python3 slicecheck.py", "RULES": "rules.json",
+    "NODECMD": "node slicecheck.mjs", "NODEIF": "",
+    "GET": "Before step 1: download the two files for your engine (see Files below) into your working folder. Use git, curl or your file tool, not the chat: the files are too long to copy through it.\n"
+  },
+  "skills/slicecheck/SKILL.md": {
+    "template": "SKILL.md",
+    "PY": "python3", "CMD": "python3 scripts/slicecheck.py", "RULES": "scripts/rules.json",
+    "NODECMD": "node scripts/slicecheck.mjs", "NODEIF": "", "GET": ""
+  },
+  "kits/chatgpt/instructions.txt": {
+    "template": "kit-instructions.txt",
+    "PY": "python", "CMD": "python slicecheck.py", "RULES": "rules.json",
+    "NODECMD": "node slicecheck.mjs", "NODEIF": " and slicecheck.mjs is in your files", "GET": "",
+    "FILES": "- slicecheck.py: the SliceCheck engine (Python, standard library only).\n- rules.json: the review rules. They decide everything."
+  },
+  "kits/copilot/instructions.txt": {
+    "template": "kit-instructions.txt",
+    "PY": "python", "CMD": "python slicecheck.py", "RULES": "rules.json",
+    "NODECMD": "node slicecheck.mjs", "NODEIF": " and slicecheck.mjs is in your files", "GET": "",
+    "FILES": "- slicecheck.py.txt and rules.json.txt. Before Rule 2, save copies named slicecheck.py and rules.json in your working folder."
+  }
+}

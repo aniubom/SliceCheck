@@ -3252,6 +3252,11 @@ function runCheck(rule, ticket, rules2) {
       return null;
   }
 }
+function findingText(f) {
+  const d = (f.detail || "").trim();
+  if (!d || f.message.toLowerCase().includes(d.toLowerCase())) return f.message;
+  return f.message.endsWith(".") ? `${f.message.slice(0, -1)} (${d}).` : `${f.message} (${d})`;
+}
 var sectionLabel = (name) => name.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase());
 function checkTicket(ticket, rules2) {
   const { code, ai, ignore } = activeRules(rules2);
@@ -3294,7 +3299,7 @@ var listSections = (s) => (Array.isArray(s) ? s : [s]).map((n) => n.replace(/_/g
 function buildPrompt(ticketText2, result2, rules2) {
   const L2 = rules2.output.labels;
   const V = rules2.output.verdict;
-  const codeLines = result2.findings.length ? result2.findings.map((f) => `${L2[f.bucket]} | ${f.id} | ${f.section} | ${f.message} (${f.detail})`).join("\n") : "(none)";
+  const codeLines = result2.findings.length ? result2.findings.map((f) => `${L2[f.bucket]} | ${f.id} | ${f.section} | ${findingText(f)}`).join("\n") : "(none)";
   const missing = new Set(result2.notFound);
   const aiRules = result2.aiRules.filter(
     (r) => (Array.isArray(r.section) ? r.section : [r.section]).some((n) => n === "any" || !missing.has(n))
@@ -3468,7 +3473,7 @@ if (json2) args.splice(args.indexOf("--json"), 1);
 var rulesArg = flag("--rules");
 var [cmd, ticketPath, reviewPath] = args;
 var here = path.dirname(fileURLToPath(import.meta.url));
-var rulesPath = rulesArg || (fs.existsSync("slicecheck.rules.yaml") ? "slicecheck.rules.yaml" : path.join(here, "..", "rules.yaml"));
+var rulesPath = rulesArg || ["slicecheck.rules.yaml", "slicecheck.rules.json", path.join(here, "rules.json"), path.join(here, "..", "rules.yaml")].find((p) => fs.existsSync(p));
 var readInput = (p) => fs.readFileSync(p === "-" ? 0 : p, "utf8");
 if (cmd === "standalone") {
   console.log(buildStandalonePrompt(yaml.load(fs.readFileSync(rulesPath, "utf8"))));
@@ -3506,7 +3511,7 @@ if (cmd === "check") {
     if (result.notFound.length) console.log(`Sections not found: ${result.notFound.join(", ")}`);
     if (!result.findings.length) console.log("No code findings.");
     for (const f of result.findings) {
-      console.log(`${L[f.bucket]} | ${f.id} | ${f.section} | ${f.message} (${f.detail})`);
+      console.log(`${L[f.bucket]} | ${f.id} | ${f.section} | ${findingText(f)}`);
     }
     console.log(`Judgment rules for the AI: ${result.aiRules.map((r) => r.id).join(", ") || "none"}`);
   }

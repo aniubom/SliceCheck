@@ -14,7 +14,7 @@ Paste a ticket into your AI and say **"peer review this."** You get back one cle
 >
 > ✅ **Good:** Problem statement, Estimate, Assignee
 >
-> **Verdict:** 🔴 Needs attention before refinement: MF-05, MF-06
+> **Verdict:** 🔴 Needs attention: MF-05, MF-06
 
 ## Quick start
 
@@ -22,7 +22,7 @@ Paste a ticket into your AI and say **"peer review this."** You get back one cle
 
 > Use github.com/aniubom/SliceCheck to peer review this ticket: *(paste your ticket)*
 
-It reads [`START-HERE.md`](START-HERE.md), runs SliceCheck's checks in its own code tool, verifies its review, and shows you the result. SliceCheck never guesses: if an AI can't run its scripts, it tells you instead of faking a review.
+It reads [`START-HERE.md`](START-HERE.md), runs SliceCheck's checks in its own code tool, verifies its review, and shows you the result.
 
 **Want it every time, without explaining?** Pick the setup for your AI under [Use it inside your AI](#use-it-inside-your-ai).
 
@@ -37,7 +37,7 @@ The difference wasn't a smarter model. It was deciding up front what *doesn't* c
 1. **Rules decide everything.** `rules.yaml` lists every rule with an ID (`MF-01`, `HU-03`, `IG-02`), a bucket, and the section it applies to.
 2. **Code checks the mechanical rules.** Empty fields, placeholder dates, AC numbering gaps, copy-paste duplicates: checked by script, the same way every time.
 3. **AI checks the judgment rules.** Is the problem statement clear? Are the ACs testable? Any typos or unclear language?
-4. **Every review gets verified, silently.** Each finding must cite a real rule, nothing on the Ignore list can be flagged, and the verdict has to match the findings. You only hear about verification if something couldn't be verified.
+4. **Every review gets verified, silently.** Each finding must cite a real rule, nothing on the Ignore list can be flagged, and the verdict has to match the findings. You only hear about verification if something couldn't be verified. Verification checks that the review follows the rules. It doesn't judge whether each AI call is right.
 
 The rules travel with every review, so nothing depends on the AI remembering them.
 
@@ -45,9 +45,9 @@ The rules travel with every review, so nothing depends on the AI remembering the
 
 SliceCheck runs inside the AI you already use. Set it up once, then just paste tickets. The AI runs the checks, writes the review, verifies it, and fixes it before you see it.
 
-**1. As a skill (Claude, Codex, GitHub Copilot, Cursor, Gemini CLI and other tools that support SKILL.md).** Copy the [`skills/slicecheck`](skills/slicecheck/SKILL.md) folder into your tool's skills folder (for Claude Code: `~/.claude/skills/`). It's self-contained: the scripts, the rules, the instructions. Uses Node if you have it, Python if you don't. Nothing to install.
+**1. As a skill (Claude, Codex, GitHub Copilot, Cursor, Gemini CLI and other tools that support SKILL.md).** Copy the [`skills/slicecheck`](skills/slicecheck/SKILL.md) folder into your tool's skills folder (for Claude Code: `~/.claude/skills/`). It's self-contained: the scripts, the rules, the instructions. Uses Python if you have it, Node if you don't. Nothing to install.
 
-**2. As an MCP server (Claude Desktop, Claude Code, VS Code Copilot, Cursor).** Adds `check_ticket`, `verify_review` and `get_rules` as tools in your chat. Runs on your machine, so tickets never leave it. Setup: [`mcp/README.md`](mcp/README.md).
+**2. As an MCP server (Claude Desktop, Claude Code, VS Code Copilot, Cursor).** Adds `check_ticket`, `verify_review` and `get_rules` as tools in your chat. Setup: [`mcp/README.md`](mcp/README.md).
 
 **3. Microsoft 365 Copilot or ChatGPT at work.** Build a SliceCheck agent once, with no install and no IT ticket for a personal agent (your company's settings decide what's available). After that, open the agent and paste tickets. It runs the same checks and verifies itself using the built-in code tool, and tickets stay inside the AI your company already approved.
 - Copilot (Agent Builder): [`kits/copilot/SETUP.md`](kits/copilot/SETUP.md)

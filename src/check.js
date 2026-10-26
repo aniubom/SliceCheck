@@ -97,6 +97,14 @@ function runCheck(rule, ticket, rules) {
   }
 }
 
+// A code finding as one line of text. The detail is left off when the message
+// already says it ("Estimate is empty." never gets "(empty)" tacked on).
+export function findingText(f) {
+  const d = (f.detail || "").trim();
+  if (!d || f.message.toLowerCase().includes(d.toLowerCase())) return f.message;
+  return f.message.endsWith(".") ? `${f.message.slice(0, -1)} (${d}).` : `${f.message} (${d})`;
+}
+
 const sectionLabel = (name) =>
   name.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase());
 

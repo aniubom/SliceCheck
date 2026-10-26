@@ -76,8 +76,7 @@ test("copilot-prompt.md matches rules.yaml", async () => {
 
 test("skill folder is self-contained and in sync", async () => {
   const { execFileSync } = await import("node:child_process");
-  assert.equal(fs.readFileSync("skills/slicecheck/rules.yaml", "utf8"), fs.readFileSync("rules.yaml", "utf8"),
-    "skills/slicecheck/rules.yaml is out of date: run npm run build:skill");
+  assert.ok(!fs.existsSync("skills/slicecheck/rules.yaml"), "the skill reads scripts/rules.json only");
   const out = execFileSync("node", ["skills/slicecheck/scripts/slicecheck.mjs", "check", "examples/04-missing-ac-jira.md"], { encoding: "utf8" });
   assert.ok(out.includes("MF-04"));
 });
@@ -128,7 +127,7 @@ test("verified review renders the same in JavaScript and Python", async () => {
 GOOD
 ✅ Good | Problem statement, User story
 VERDICT
-🔴 Needs attention before refinement: MF-05`;
+🔴 Needs attention: MF-05`;
   const js = renderReview(review, rules);
   assert.ok(js.startsWith("**SliceCheck review**"));
   assert.ok(!/\bPASS\b/.test(js) && !/verif/i.test(js), "verification must stay silent in the rendered review");
@@ -137,11 +136,35 @@ VERDICT
   assert.equal(py.trimEnd(), js);
 });
 
-test("every instruction file carries the same rulebook", () => {
-  const files = ["START-HERE.md", "skills/slicecheck/SKILL.md", "kits/chatgpt/instructions.txt", "kits/copilot/instructions.txt"];
-  const norm = (t) => t.slice(t.indexOf("RULE 1."), t.indexOf("outside the review.") + 19)
-    .replace(/python3? (scripts\/)?slicecheck\.py/g, "CMD").replace(/python3? --version/g, "PY --version")
-    .replace(/(scripts\/)?rules\.json/g, "RULES").replace(/node \S*slicecheck\.mjs/g, "NODECMD").replace(/\S*slicecheck\.mjs/g, "NODEFILE");
-  const blocks = files.map((f) => norm(fs.readFileSync(f, "utf8")));
-  for (const b of blocks) assert.equal(b, blocks[0]);
+test("every instruction file carries the same rulebook", async () => {
+  const { fillTarget } = await import("../scripts/fill.mjs");
+  const targets = JSON.parse(fs.readFileSync("scripts/templates/targets.json", "utf8"));
+  for (const [file, t] of Object.entries(targets)) {
+    assert.equal(fs.readFileSync(file, "utf8"), fillTarget(t), `${file} is out of date: run npm run build:skill`);
+  }
+  // The rulebook itself never names an engine path: those come only from targets.json.
+  const block = fs.readFileSync("scripts/templates/rules-block.md", "utf8");
+  assert.ok(!/slicecheck\.(py|mjs)|rules\.json/.test(block), "rules-block.md must use placeholders, not paths");
+});
+
+test("code findings never repeat their message in the detail", async () => {
+  const { findingText } = await import("../src/check.js");
+  assert.equal(findingText({ message: "Estimate or story points are empty.", detail: "empty" }), "Estimate or story points are empty.");
+  assert.equal(findingText({ message: "AC numbering has a gap.", detail: "jumps from AC-1 to AC-3" }), "AC numbering has a gap (jumps from AC-1 to AC-3).");
+  const { execFileSync } = await import("node:child_process");
+  const py = execFileSync("python3", ["-c", "import sys; sys.path.insert(0,'python'); import slicecheck as s; print(s.finding_text({'message':'Estimate or story points are empty.','detail':'empty'}))"], { encoding: "utf8" });
+  assert.equal(py.trim(), "Estimate or story points are empty.");
+});
+
+test("each engine runs from a flat two-file download", async () => {
+  const { execFileSync } = await import("node:child_process");
+  const os = await import("node:os");
+  const path = await import("node:path");
+  const ticket = path.resolve("examples/04-missing-ac-jira.md");
+  for (const [engine, files] of [["node", ["skills/slicecheck/scripts/slicecheck.mjs"]], ["python3", ["python/slicecheck.py"]]]) {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "sc-"));
+    for (const f of [...files, "python/rules.json"]) fs.copyFileSync(f, path.join(dir, path.basename(f)));
+    const out = execFileSync(engine, [path.basename(files[0]), "check", ticket], { cwd: dir, encoding: "utf8" });
+    assert.ok(out.includes("MF-04"), engine);
+  }
 });

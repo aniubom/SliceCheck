@@ -287,10 +287,19 @@ def check_ticket(ticket_text, rules):
 # ---------------------------------------------------------------- prompt
 
 
+def finding_text(f):
+    """A code finding as one line. The detail is left off when the message already says it."""
+    d = (f.get("detail") or "").strip()
+    m = f["message"]
+    if not d or d.lower() in m.lower():
+        return m
+    return f"{m[:-1]} ({d})." if m.endswith(".") else f"{m} ({d})"
+
+
 def build_prompt(ticket_text, result, rules):
     L = rules["output"]["labels"]
     V = rules["output"]["verdict"]
-    code = "\n".join(f"{L[f['bucket']]} | {f['id']} | {f['section']} | {f['message']} ({f['detail']})"
+    code = "\n".join(f"{L[f['bucket']]} | {f['id']} | {f['section']} | {finding_text(f)}"
                      for f in result["findings"]) or "(none)"
     # Judgment rules only for sections this ticket has. Missing optional sections
     # are never mentioned (missing required ones are already code findings).
@@ -481,7 +490,7 @@ def main(argv):
             if not result["findings"]:
                 print("No code findings.")
             for f in result["findings"]:
-                print(f"{L[f['bucket']]} | {f['id']} | {f['section']} | {f['message']} ({f['detail']})")
+                print(f"{L[f['bucket']]} | {f['id']} | {f['section']} | {finding_text(f)}")
             print("Judgment rules for the AI: " + (", ".join(r["id"] for r in result["aiRules"]) or "none"))
         return 0
     if args[0] == "prompt":

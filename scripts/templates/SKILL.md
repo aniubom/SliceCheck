@@ -13,4 +13,4 @@ Follow these rules exactly. Paths are relative to this skill's folder. Nothing t
 
 ## Changing the rules
 
-If the user asks to change a rule ("stop flagging empty estimates", "we call it Business Need", "turn on the approval rule"), copy `scripts/rules.json` to `slicecheck.rules.json` in their project (with Node: copy `rules.yaml` to `slicecheck.rules.yaml`), edit that copy, and tell them which rule ID changed. The scripts use the team file automatically. Never edit the defaults in this folder for one team.
+If the user asks to change a rule ("stop flagging empty estimates", "we call it Business Need", "turn on the approval rule"), copy `scripts/rules.json` to `slicecheck.rules.json` in their project, edit that copy, and tell them which rule ID changed. Both engines use the team file automatically. Never edit the defaults in this folder for one team.

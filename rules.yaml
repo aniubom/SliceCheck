@@ -34,7 +34,7 @@ output:
     good: "✅ Good"
   verdict:
     clear: "✅ Clear to proceed"
-    blocked: "🔴 Needs attention before refinement"
+    blocked: "🔴 Needs attention"
   # Any Must Fix finding means the verdict is "blocked" and lists only the
   # Must Fix IDs. The verdict is the last line; the only line ever allowed
   # after it is the "Not verified" warning, when a review couldn't be verified.
@@ -183,7 +183,7 @@ rules:
     by: code
     section: acceptance_criteria
     check: sequential
-    message: "AC numbering has a gap (for example, it starts at AC-2)."
+    message: "AC numbering has a gap."
 
   - id: HU-04
     bucket: heads_up

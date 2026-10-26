@@ -1,6 +1,6 @@
 # SliceCheck MCP server
 
-Runs SliceCheck as tools inside your AI chat: `check_ticket`, `verify_review`, `get_rules`. It runs on your own machine, so tickets never leave it.
+Runs SliceCheck as tools inside your AI chat: `check_ticket`, `verify_review`, `get_rules`.
 
 Paste a ticket into your chat and say "peer review this." The AI checks it, writes the review, verifies it, and shows you the result.
 

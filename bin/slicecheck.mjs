@@ -11,7 +11,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import yaml from "js-yaml";
 import { parseTicket } from "../src/parse.js";
-import { checkTicket } from "../src/check.js";
+import { checkTicket, findingText } from "../src/check.js";
 import { buildPrompt, buildStandalonePrompt } from "../src/prompt.js";
 import { verifyReview } from "../src/verify.js";
 import { renderReview } from "../src/render.js";
@@ -28,12 +28,14 @@ const json = args.includes("--json");
 if (json) args.splice(args.indexOf("--json"), 1);
 const rulesArg = flag("--rules");
 const [cmd, ticketPath, reviewPath] = args;
-// Rules: --rules <path>, else the team's slicecheck.rules.yaml in the current
-// folder, else the default rules.yaml shipped one level above this script.
+// Rules: --rules <path>, else the team's file in the current folder
+// (slicecheck.rules.yaml or .json), else rules.json beside this script (the
+// skill and single-file downloads), else the repo's rules.yaml.
 const here = path.dirname(fileURLToPath(import.meta.url));
 const rulesPath =
   rulesArg ||
-  (fs.existsSync("slicecheck.rules.yaml") ? "slicecheck.rules.yaml" : path.join(here, "..", "rules.yaml"));
+  ["slicecheck.rules.yaml", "slicecheck.rules.json", path.join(here, "rules.json"), path.join(here, "..", "rules.yaml")]
+    .find((p) => fs.existsSync(p));
 
 // "-" reads from standard input, so agents can pipe text without saving a file.
 const readInput = (p) => fs.readFileSync(p === "-" ? 0 : p, "utf8");
@@ -78,7 +80,7 @@ if (cmd === "check") {
     if (result.notFound.length) console.log(`Sections not found: ${result.notFound.join(", ")}`);
     if (!result.findings.length) console.log("No code findings.");
     for (const f of result.findings) {
-      console.log(`${L[f.bucket]} | ${f.id} | ${f.section} | ${f.message} (${f.detail})`);
+      console.log(`${L[f.bucket]} | ${f.id} | ${f.section} | ${findingText(f)}`);
     }
     console.log(`Judgment rules for the AI: ${result.aiRules.map((r) => r.id).join(", ") || "none"}`);
   }
