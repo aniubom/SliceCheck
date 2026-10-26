@@ -3351,19 +3351,23 @@ ${list("ignore")}
 STAGES (read the ticket's status to decide its stage):
 ${stages}
 
-OUTPUT FORMAT (use exactly this, nothing before or after):
-FINDINGS
-<one line per finding: label | rule ID | section | specific note>
-GOOD
-${L2.good} | <comma-separated sections with no findings>
-VERDICT
-<exactly one line>
+OUTPUT FORMAT (use exactly this, nothing before or after; leave out a bucket with no findings):
+**SliceCheck review**
+
+${L2.must_fix.split(" ")[0]} **${L2.must_fix.split(" ").slice(1).join(" ")}**
+- **<rule ID> \xB7 <section>:** <specific note>
+
+${L2.heads_up.split(" ")[0]} **${L2.heads_up.split(" ").slice(1).join(" ")}**
+- **<rule ID> \xB7 <section>:** <specific note>
+
+${L2.good.split(" ")[0]} **${L2.good.split(" ").slice(1).join(" ")}:** <sections with no findings>
+
+**Verdict:** <one line>
 
 RULES FOR THE OUTPUT:
-- Labels are exactly "${L2.must_fix}" and "${L2.heads_up}". Every finding cites one rule ID from the lists above.
-- If there are no findings, write "(none)" under FINDINGS.
-- VERDICT LOGIC (follow exactly): if there is at least one ${L2.must_fix} finding, the verdict line is "${V.blocked}: " followed by the Must Fix rule IDs. Otherwise the verdict line is "${V.clear}".
-- One verdict line only. No extra commentary.
+- Every finding cites one rule ID from the lists above, in the right bucket.
+- VERDICT LOGIC (follow exactly): if there is at least one ${L2.must_fix} finding, the verdict is "${V.blocked}: " followed by the Must Fix rule IDs. Otherwise it is "${V.clear}".
+- No extra commentary.
 
 Reply "Ready. Paste a ticket." and wait for the ticket.`;
 }
@@ -3380,7 +3384,8 @@ function parseReview(text) {
     return { raw: l, label: parts[0], id: parts[1], section: parts[2], note: parts.slice(3).join(" | ") };
   }) : [];
   const verdictLines = v >= 0 ? lines.slice(v + 1) : [];
-  return { lines, hasSections: { findings: f >= 0, good: g >= 0, verdict: v >= 0 }, findings, verdictLines };
+  const goodLine = g >= 0 && g + 1 < (v >= 0 ? v : lines.length) ? lines[g + 1] : "";
+  return { lines, hasSections: { findings: f >= 0, good: g >= 0, verdict: v >= 0 }, findings, verdictLines, goodLine };
 }
 function verifyReview(reviewText, checkResult, rules2) {
   const problems = [];
@@ -3425,6 +3430,26 @@ function verifyReview(reviewText, checkResult, rules2) {
     problems.push(`Verdict contradicts findings: no Must Fix items, so it must be exactly "${V.clear}".`);
   }
   return { passed: problems.length === 0, problems };
+}
+
+// src/render.js
+function renderReview(reviewText, rules2, { warning } = {}) {
+  const L2 = rules2.output.labels;
+  const review = parseReview(reviewText);
+  const byId = new Map(activeRules(rules2).all.map((r) => [r.id, r]));
+  const bucketOf = (f) => byId.get(f.id)?.bucket;
+  const item = (f) => `- **${f.id} \xB7 ${f.section}:** ${f.note || byId.get(f.id)?.message || ""}`.trimEnd();
+  const out = ["**SliceCheck review**", ""];
+  const mf = review.findings.filter((f) => bucketOf(f) === "must_fix");
+  const hu = review.findings.filter((f) => bucketOf(f) === "heads_up");
+  if (mf.length) out.push(`${L2.must_fix.split(" ")[0]} **${L2.must_fix.split(" ").slice(1).join(" ")}**`, ...mf.map(item), "");
+  if (hu.length) out.push(`${L2.heads_up.split(" ")[0]} **${L2.heads_up.split(" ").slice(1).join(" ")}**`, ...hu.map(item), "");
+  const goodLine = review.goodLine || "";
+  const good = goodLine.split("|").slice(1).join("|").trim();
+  if (good) out.push(`${L2.good.split(" ")[0]} **${L2.good.split(" ").slice(1).join(" ")}:** ${good}`, "");
+  out.push(`**Verdict:** ${review.verdictLines[0] || ""}`);
+  if (warning) out.push("", `\u26A0\uFE0F ${warning}`);
+  return out.join("\n");
 }
 
 // bin/slicecheck.mjs
@@ -3490,9 +3515,13 @@ if (cmd === "prompt") {
   process.exit(0);
 }
 if (cmd === "verify") {
-  const res = verifyReview(readInput(reviewPath), result, rules);
+  const reviewText = readInput(reviewPath);
+  const res = verifyReview(reviewText, result, rules);
+  if (res.passed) res.rendered = renderReview(reviewText, rules);
   if (json2) console.log(JSON.stringify(res, null, 2));
-  else if (res.passed) console.log("PASS: the review follows the rules.");
+  else if (res.passed) console.log(`PASS. Show the user exactly this, nothing before or after:
+
+${res.rendered}`);
   else {
     console.log("FAIL: the review breaks the rules:");
     for (const p of res.problems) console.log(`- ${p}`);

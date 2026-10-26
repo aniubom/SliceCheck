@@ -14,6 +14,7 @@ import { parseTicket } from "../src/parse.js";
 import { checkTicket } from "../src/check.js";
 import { buildPrompt, buildStandalonePrompt } from "../src/prompt.js";
 import { verifyReview } from "../src/verify.js";
+import { renderReview } from "../src/render.js";
 
 const args = process.argv.slice(2);
 const flag = (name) => {
@@ -90,9 +91,11 @@ if (cmd === "prompt") {
 }
 
 if (cmd === "verify") {
-  const res = verifyReview(readInput(reviewPath), result, rules);
+  const reviewText = readInput(reviewPath);
+  const res = verifyReview(reviewText, result, rules);
+  if (res.passed) res.rendered = renderReview(reviewText, rules);
   if (json) console.log(JSON.stringify(res, null, 2));
-  else if (res.passed) console.log("PASS: the review follows the rules.");
+  else if (res.passed) console.log(`PASS. Show the user exactly this, nothing before or after:\n\n${res.rendered}`);
   else {
     console.log("FAIL: the review breaks the rules:");
     for (const p of res.problems) console.log(`- ${p}`);

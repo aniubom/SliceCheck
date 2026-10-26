@@ -25,7 +25,8 @@ export function parseReview(text) {
           })
       : [];
   const verdictLines = v >= 0 ? lines.slice(v + 1) : [];
-  return { lines, hasSections: { findings: f >= 0, good: g >= 0, verdict: v >= 0 }, findings, verdictLines };
+  const goodLine = g >= 0 && g + 1 < (v >= 0 ? v : lines.length) ? lines[g + 1] : "";
+  return { lines, hasSections: { findings: f >= 0, good: g >= 0, verdict: v >= 0 }, findings, verdictLines, goodLine };
 }
 
 export function verifyReview(reviewText, checkResult, rules) {

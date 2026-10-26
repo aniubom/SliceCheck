@@ -90,19 +90,23 @@ ${list("ignore")}
 STAGES (read the ticket's status to decide its stage):
 ${stages}
 
-OUTPUT FORMAT (use exactly this, nothing before or after):
-FINDINGS
-<one line per finding: label | rule ID | section | specific note>
-GOOD
-${L.good} | <comma-separated sections with no findings>
-VERDICT
-<exactly one line>
+OUTPUT FORMAT (use exactly this, nothing before or after; leave out a bucket with no findings):
+**SliceCheck review**
+
+${L.must_fix.split(" ")[0]} **${L.must_fix.split(" ").slice(1).join(" ")}**
+- **<rule ID> · <section>:** <specific note>
+
+${L.heads_up.split(" ")[0]} **${L.heads_up.split(" ").slice(1).join(" ")}**
+- **<rule ID> · <section>:** <specific note>
+
+${L.good.split(" ")[0]} **${L.good.split(" ").slice(1).join(" ")}:** <sections with no findings>
+
+**Verdict:** <one line>
 
 RULES FOR THE OUTPUT:
-- Labels are exactly "${L.must_fix}" and "${L.heads_up}". Every finding cites one rule ID from the lists above.
-- If there are no findings, write "(none)" under FINDINGS.
-- VERDICT LOGIC (follow exactly): if there is at least one ${L.must_fix} finding, the verdict line is "${V.blocked}: " followed by the Must Fix rule IDs. Otherwise the verdict line is "${V.clear}".
-- One verdict line only. No extra commentary.
+- Every finding cites one rule ID from the lists above, in the right bucket.
+- VERDICT LOGIC (follow exactly): if there is at least one ${L.must_fix} finding, the verdict is "${V.blocked}: " followed by the Must Fix rule IDs. Otherwise it is "${V.clear}".
+- No extra commentary.
 
 Reply "Ready. Paste a ticket." and wait for the ticket.`;
 }

@@ -22,7 +22,7 @@ Paste a ticket into your AI and say **"peer review this."** You get back one cle
 
 > Use github.com/aniubom/SliceCheck to peer review this ticket: *(paste your ticket)*
 
-It reads [`START-HERE.md`](START-HERE.md) and follows SliceCheck's rules. If it can run code, it also runs the checks and verifies its own review.
+It reads [`START-HERE.md`](START-HERE.md), runs SliceCheck's checks in its own code tool, verifies its review, and shows you the result. If an AI can't run code, it still reviews by the rules and tells you the review wasn't verified.
 
 **Want it every time, without explaining?** Pick the setup for your AI under [Use it inside your AI](#use-it-inside-your-ai).
 
@@ -37,7 +37,7 @@ The difference wasn't a smarter model. It was deciding up front what *doesn't* c
 1. **Rules decide everything.** `rules.yaml` lists every rule with an ID (`MF-01`, `HU-03`, `IG-02`), a bucket, and the section it applies to.
 2. **Code checks the mechanical rules.** Empty fields, placeholder dates, AC numbering gaps, copy-paste duplicates: checked by script, the same way every time.
 3. **AI checks the judgment rules.** Is the problem statement clear? Are the ACs testable? Any typos or unclear language?
-4. **Every review gets verified.** Each finding must cite a real rule, nothing on the Ignore list can be flagged, and the verdict has to match the findings. Any Must Fix means it can't say "Clear to proceed."
+4. **Every review gets verified, silently.** Each finding must cite a real rule, nothing on the Ignore list can be flagged, and the verdict has to match the findings. You only hear about verification if something couldn't be verified.
 
 The rules travel with every review, so nothing depends on the AI remembering them.
 

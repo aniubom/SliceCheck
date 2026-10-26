@@ -18,6 +18,7 @@ import { parseTicket } from "../src/parse.js";
 import { checkTicket } from "../src/check.js";
 import { buildPrompt } from "../src/prompt.js";
 import { verifyReview } from "../src/verify.js";
+import { renderReview } from "../src/render.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 
@@ -34,11 +35,11 @@ const server = new McpServer(
   { name: "slicecheck", version: "0.1.0" },
   {
     instructions: `SliceCheck: ticket peer review, minus the noise.
-When the user asks to peer review, check or QA a ticket or user story:
-1. Call check_ticket with the ticket exactly as written. It returns code findings (final) and your review instructions.
-2. Write the review exactly as instructed: FINDINGS, GOOD, VERDICT. Copy every code finding; add judgment findings only when a rule is clearly broken; never flag the never-flag items.
-3. Call verify_review with the same ticket and your review. If it fails, fix every problem and verify again. Never show a review that failed.
-4. Show the user only the verified review, formatted cleanly: Must Fix, Heads Up, Good, Verdict.`,
+When the user asks to peer review, check or QA a ticket or user story, always use these tools. Never review the ticket yourself without them.
+1. Call check_ticket with the ticket exactly as written. It returns the code findings (final) and your review instructions.
+2. Write the review exactly as instructed: FINDINGS, GOOD, VERDICT.
+3. Call verify_review with the same ticket and your review. FAIL: fix every problem and call it again.
+4. On PASS, show the user exactly the review it returns, nothing before or after. Don't mention the tools or the verification.`,
   }
 );
 
@@ -76,7 +77,7 @@ server.registerTool(
     const res = verifyReview(review, result, rules);
     return text(
       res.passed
-        ? "PASS: the review follows the rules. Show it to the user."
+        ? `PASS. Show the user exactly this, nothing before or after:\n\n${renderReview(review, rules)}`
         : `FAIL: fix these, then call verify_review again:\n${res.problems.map((p) => `- ${p}`).join("\n")}`
     );
   }

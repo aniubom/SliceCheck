@@ -118,3 +118,21 @@ test("ChatGPT and Copilot kits carry the current engine and rules", () => {
     assert.ok(fs.readFileSync(`kits/${k}/instructions.txt`, "utf8").length <= 8000, `${k} instructions over 8,000 characters`);
   }
 });
+
+test("verified review renders the same in JavaScript and Python", async () => {
+  const { execFileSync } = await import("node:child_process");
+  const { renderReview } = await import("../src/render.js");
+  const review = `FINDINGS
+🔴 Must Fix | MF-05 | Acceptance criteria | AC-3 has no pass/fail outcome.
+🟡 Heads Up | HU-01 | Estimate | Empty.
+GOOD
+✅ Good | Problem statement, User story
+VERDICT
+🔴 Needs attention before refinement: MF-05`;
+  const js = renderReview(review, rules);
+  assert.ok(js.startsWith("**SliceCheck review**"));
+  assert.ok(!/\bPASS\b/.test(js) && !/verif/i.test(js), "verification must stay silent in the rendered review");
+  fs.writeFileSync("/tmp/sc-review.txt", review);
+  const py = execFileSync("python3", ["-c", `import sys; sys.path.insert(0,'python'); import slicecheck as s; print(s.render_review(open('/tmp/sc-review.txt',encoding='utf-8').read(), s.load_rules('python/rules.json')))`], { encoding: "utf8" });
+  assert.equal(py.trimEnd(), js);
+});

@@ -356,9 +356,11 @@ def _parse_review(text):
                 continue
             parts = [p.strip() for p in l.split("|")]
             findings.append({"raw": l, "label": parts[0] if parts else "", "id": parts[1] if len(parts) > 1 else None,
-                             "section": parts[2] if len(parts) > 2 else None})
+                             "section": parts[2] if len(parts) > 2 else None, "note": " | ".join(parts[3:])})
+    end_good = v if v >= 0 else len(lines)
+    good_line = lines[g + 1] if g >= 0 and g + 1 < end_good else ""
     return {"has": {"findings": f >= 0, "good": g >= 0, "verdict": v >= 0},
-            "findings": findings, "verdict_lines": lines[v + 1:] if v >= 0 else []}
+            "findings": findings, "verdict_lines": lines[v + 1:] if v >= 0 else [], "good_line": good_line}
 
 
 def verify_review(review_text, result, rules):
@@ -402,6 +404,42 @@ def verify_review(review_text, result, rules):
     elif verdict != V["clear"]:
         problems.append(f'Verdict contradicts findings: no Must Fix items, so it must be exactly "{V["clear"]}".')
     return {"passed": not problems, "problems": problems}
+
+
+# ---------------------------------------------------------------- render
+
+
+def render_review(review_text, rules, warning=None):
+    """The clean result the user sees. Verification stays silent unless it failed."""
+    L = rules["output"]["labels"]
+    review = _parse_review(review_text)
+    by_id = {r["id"]: r for r in active_rules(rules)["all"]}
+
+    def bucket(f):
+        return (by_id.get(f["id"]) or {}).get("bucket")
+
+    def item(f):
+        note = f["note"] or (by_id.get(f["id"]) or {}).get("message", "")
+        return f"- **{f['id']} · {f['section']}:** {note}".rstrip()
+
+    def head(label):
+        parts = label.split(" ")
+        return f"{parts[0]} **{' '.join(parts[1:])}"
+
+    out = ["**SliceCheck review**", ""]
+    mf = [f for f in review["findings"] if bucket(f) == "must_fix"]
+    hu = [f for f in review["findings"] if bucket(f) == "heads_up"]
+    if mf:
+        out += [head(L["must_fix"]) + "**"] + [item(f) for f in mf] + [""]
+    if hu:
+        out += [head(L["heads_up"]) + "**"] + [item(f) for f in hu] + [""]
+    good = "|".join(review["good_line"].split("|")[1:]).strip()
+    if good:
+        out += [head(L["good"]) + ":** " + good, ""]
+    out.append("**Verdict:** " + (review["verdict_lines"][0] if review["verdict_lines"] else ""))
+    if warning:
+        out += ["", "⚠️ " + warning]
+    return "\n".join(out)
 
 
 # ---------------------------------------------------------------- CLI
@@ -449,11 +487,14 @@ def main(argv):
     if args[0] == "prompt":
         print(build_prompt(ticket, result, rules))
         return 0
-    res = verify_review(_read(args[2]), result, rules)
+    review_text = _read(args[2])
+    res = verify_review(review_text, result, rules)
+    if res["passed"]:
+        res["rendered"] = render_review(review_text, rules)
     if as_json:
         print(json.dumps(res, indent=2, ensure_ascii=False))
     elif res["passed"]:
-        print("PASS: the review follows the rules.")
+        print("PASS. Show the user exactly this, nothing before or after:\n\n" + res["rendered"])
     else:
         print("FAIL: the review breaks the rules:")
         for p in res["problems"]:

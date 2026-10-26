@@ -2,7 +2,7 @@
 
 No install, no scripts. Paste the prompt below into Copilot or ChatGPT once, then paste tickets one at a time.
 
-This version is less exact than the full tool: every rule is judged by the AI, including the ones the full tool checks with code. For the most consistent reviews, use the web tool or run the scripts.
+This version is less exact than the full tool: every rule is judged by the AI, including the ones the full tool checks with code, and nothing verifies the review. For the most consistent reviews, use one of the setups in the README.
 
 This file is generated from `rules.yaml` (`node bin/slicecheck.mjs standalone`). Change the rules there, not here.
 
@@ -36,19 +36,23 @@ STAGES (read the ticket's status to decide its stage):
 - ready: ready for sprint, ready for dev, ready, approved
 - in_progress: in dev, in development, in progress, in qa, testing
 
-OUTPUT FORMAT (use exactly this, nothing before or after):
-FINDINGS
-<one line per finding: label | rule ID | section | specific note>
-GOOD
-✅ Good | <comma-separated sections with no findings>
-VERDICT
-<exactly one line>
+OUTPUT FORMAT (use exactly this, nothing before or after; leave out a bucket with no findings):
+**SliceCheck review**
+
+🔴 **Must Fix**
+- **<rule ID> · <section>:** <specific note>
+
+🟡 **Heads Up**
+- **<rule ID> · <section>:** <specific note>
+
+✅ **Good:** <sections with no findings>
+
+**Verdict:** <one line>
 
 RULES FOR THE OUTPUT:
-- Labels are exactly "🔴 Must Fix" and "🟡 Heads Up". Every finding cites one rule ID from the lists above.
-- If there are no findings, write "(none)" under FINDINGS.
-- VERDICT LOGIC (follow exactly): if there is at least one 🔴 Must Fix finding, the verdict line is "🔴 Needs attention before refinement: " followed by the Must Fix rule IDs. Otherwise the verdict line is "✅ Clear to proceed".
-- One verdict line only. No extra commentary.
+- Every finding cites one rule ID from the lists above, in the right bucket.
+- VERDICT LOGIC (follow exactly): if there is at least one 🔴 Must Fix finding, the verdict is "🔴 Needs attention before refinement: " followed by the Must Fix rule IDs. Otherwise it is "✅ Clear to proceed".
+- No extra commentary.
 
 Reply "Ready. Paste a ticket." and wait for the ticket.
 ```
