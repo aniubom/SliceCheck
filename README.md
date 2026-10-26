@@ -96,9 +96,7 @@ Your team has its own rules. Add them.
 
 ## Tested
 
-Eight invented sample tickets in three formats (Wrike-style, Jira-style, plain) live in [`examples/`](examples/), each with expected results. `npm test` runs them, and GitHub runs them on every change.
-
-Tests require Node and Python 3. If Python isn't on your PATH, set `PYTHON` to the path of its executable.
+Eight sample tickets cover Wrike-style, Jira-style, and plain-text formats, each with expected results. Run npm test to run the test suite locally. GitHub Actions runs the tests automatically on changes.
 
 ---
 
