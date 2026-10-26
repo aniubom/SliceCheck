@@ -7,6 +7,7 @@ import yaml from "js-yaml";
 import { parseTicket } from "../src/parse.js";
 import { checkTicket } from "../src/check.js";
 import { verifyReview } from "../src/verify.js";
+import { renderReview } from "../src/render.js";
 import { findingText } from "../src/check.js";
 import { runPython, withTempDir } from "./helpers/runtime.js";
 
@@ -102,6 +103,20 @@ test("Python and JavaScript agree on every verification regression", () => {
   assert.deepEqual(actual, expected);
 });
 
+test("visible reviews show only issues and the verdict", () => {
+  const cleanReview = review([], "Problem statement, User story, Acceptance criteria");
+  const clear = "**Verdict:** " + rules.output.verdict.clear;
+  assert.equal(renderReview(cleanReview, rules), clear);
+  assert.equal(renderReview(cleanReview, rules, { warning: "Not verified: no code tool." }),
+    clear + "\n\n⚠️ Not verified: no code tool.");
+  const written = review([mf05], "Problem statement", ["MF-05"]);
+  const shown = renderReview(written, rules);
+  assert.ok(shown.includes("MF-05") && !shown.includes("Good") && !shown.includes("Problem statement"));
+  const py = runPython(["-c", "import sys; sys.path.insert(0,'python'); import slicecheck as s; print(s.render_review(sys.stdin.read(),s.load_rules('python/rules.json')))"],
+    { input: cleanReview });
+  assert.equal(py.trimEnd(), clear);
+});
+
 test("Node CLI, bundled skill and every Python kit reject invalid reviews and accept valid ones", () => {
   withTempDir((dir) => {
     const ticketFile = path.join(dir, "ticket.txt");
@@ -116,7 +131,7 @@ test("Node CLI, bundled skill and every Python kit reject invalid reviews and ac
       "kits/chatgpt/slicecheck.py", path.join(copilot, "slicecheck.py"),
     ];
     // One real review and one isolated regression for each new guarantee.
-    const names = ["real code findings", "invented Must Fix code finding", "real code finding with wrong section",
+    const names = ["clean review", "real code findings", "invented Must Fix code finding", "real code finding with wrong section",
       "compound AI label contradicts Good", "extra Must Fix verdict ID"];
     for (const name of names) {
       const c = cases.find((c) => c.name === name);
@@ -134,7 +149,12 @@ test("Node CLI, bundled skill and every Python kit reject invalid reviews and ac
           assert.equal(result.status, c.passed ? 0 : 2, engine);
           output = result.stdout;
         }
-        assert.equal(JSON.parse(output).passed, c.passed, engine + ": " + name);
+        const result = JSON.parse(output);
+        assert.equal(result.passed, c.passed, engine + ": " + name);
+        if (c.passed) {
+          assert.ok(!result.rendered.includes("Good"), engine);
+          if (name === "clean review") assert.equal(result.rendered, "**Verdict:** " + rules.output.verdict.clear, engine);
+        }
       }
     }
   });

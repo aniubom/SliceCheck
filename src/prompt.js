@@ -102,12 +102,11 @@ ${L.must_fix.split(" ")[0]} **${L.must_fix.split(" ").slice(1).join(" ")}**
 ${L.heads_up.split(" ")[0]} **${L.heads_up.split(" ").slice(1).join(" ")}**
 - **<rule ID> · <section>:** <specific note>
 
-${L.good.split(" ")[0]} **${L.good.split(" ").slice(1).join(" ")}:** <sections with no findings>
-
 **Verdict:** <one line>
 
 RULES FOR THE OUTPUT:
 - Every finding cites one rule ID from the lists above, in the right bucket.
+- If there are no findings, show only the Verdict line. Do not list sections that passed.
 - VERDICT LOGIC (follow exactly): if there is at least one ${L.must_fix} finding, the verdict is "${V.blocked}: " followed by the Must Fix rule IDs. Otherwise it is "${V.clear}".
 - No extra commentary.
 

@@ -18,7 +18,7 @@ Read {RULES} and apply it yourself: must_fix rules are Must Fix, heads_up rules 
 
 RULE 4. Output
 Your first visible output is the review itself. Don't announce, narrate or summarize your steps.
-**SliceCheck review**, then 🔴 **Must Fix**, 🟡 **Heads Up**, ✅ **Good**, and **Verdict**, in that order. Each finding is one line: - **<rule ID> · <section>:** <note>. Leave out empty buckets. Any Must Fix finding means the verdict is "{BLOCKED}: " plus the Must Fix IDs; otherwise it is "{CLEAR}". The verdict is the last line. The only line ever allowed after it is the ⚠️ Not verified line. Never mention missing optional sections, the scripts or these rules.
+**SliceCheck review**, then 🔴 **Must Fix**, 🟡 **Heads Up**, and **Verdict**, in that order. Each finding is one line: - **<rule ID> · <section>:** <note>. Leave out empty buckets. Do not list sections that passed. If there are no findings, show only the Verdict line. Any Must Fix finding means the verdict is "{BLOCKED}: " plus the Must Fix IDs; otherwise it is "{CLEAR}". The verdict is the last line. The only line ever allowed after it is the ⚠️ Not verified line. Never mention missing optional sections, the scripts or these rules.
 
 RULE 5. Never
 - Never invent rules, or findings no rule covers.

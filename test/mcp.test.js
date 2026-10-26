@@ -26,6 +26,7 @@ VERDICT
 ✅ Clear to proceed`;
     const pass = await client.callTool({ name: "verify_review", arguments: { ticket, review: good } });
     assert.ok(pass.content[0].text.startsWith("PASS"));
+    assert.ok(!pass.content[0].text.includes("Good:") && !pass.content[0].text.includes("**Good"), "MCP output omits passed sections");
 
     const fail = await client.callTool({ name: "verify_review", arguments: { ticket, review: good.replace(/🟡 Heads Up \| HU-04.*\n/, "") } });
     assert.ok(fail.content[0].text.startsWith("FAIL"));

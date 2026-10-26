@@ -483,16 +483,13 @@ def render_review(review_text, rules, warning=None):
         parts = label.split(" ")
         return f"{parts[0]} **{' '.join(parts[1:])}"
 
-    out = ["**SliceCheck review**", ""]
     mf = [f for f in review["findings"] if bucket(f) == "must_fix"]
     hu = [f for f in review["findings"] if bucket(f) == "heads_up"]
+    out = ["**SliceCheck review**", ""] if mf or hu else []
     if mf:
         out += [head(L["must_fix"]) + "**"] + [item(f) for f in mf] + [""]
     if hu:
         out += [head(L["heads_up"]) + "**"] + [item(f) for f in hu] + [""]
-    good = "|".join(review["good_line"].split("|")[1:]).strip()
-    if good:
-        out += [head(L["good"]) + ":** " + good, ""]
     out.append("**Verdict:** " + (review["verdict_lines"][0] if review["verdict_lines"] else ""))
     if warning:
         out += ["", "⚠️ " + warning]
