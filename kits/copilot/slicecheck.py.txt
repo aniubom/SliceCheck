@@ -372,6 +372,33 @@ def _parse_review(text):
             "findings": findings, "verdict_lines": lines[v + 1:] if v >= 0 else [], "good_line": good_line}
 
 
+def _normalize_section(text):
+    text = re.sub(r"[*`]", "", str(text or "").lower())
+    text = re.sub(r"[_-]+", " ", text)
+    text = re.sub(r":\s*$", "", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def _section_resolver(rules):
+    # Resolve a whole alias before splitting compound AI labels.
+    aliases = {"whole ticket": "any"}
+    for name, section in (rules.get("sections") or {}).items():
+        for label in [name] + (section.get("aliases") or []):
+            aliases[_normalize_section(label)] = name
+
+    def resolve(label):
+        normalized = _normalize_section(label)
+        if normalized in aliases:
+            return [aliases[normalized]]
+        for separator in [r"[,;]", r"[/&]|\band\b"]:
+            parts = re.split(separator, normalized)
+            if len(parts) > 1:
+                return list(dict.fromkeys(name for part in parts for name in resolve(part)))
+        return [normalized] if normalized else []
+
+    return resolve
+
+
 def verify_review(review_text, result, rules):
     problems = []
     L = rules["output"]["labels"]
@@ -384,6 +411,8 @@ def verify_review(review_text, result, rules):
         problems.append(f"Format: expected exactly one verdict line, found {len(review['verdict_lines'])}.")
 
     by_id = {r["id"]: r for r in active_rules(rules)["all"]}
+    code_by_id = {f["id"]: f for f in result["findings"]}
+    deferred = {r["id"] for r in result["aiRules"]}
     for f in review["findings"]:
         rule = by_id.get(f["id"])
         if not rule:
@@ -395,21 +424,40 @@ def verify_review(review_text, result, rules):
             problems.append(f"Cited a rule that is turned off ({f['id']}).")
         elif f["label"] != L[rule["bucket"]]:
             problems.append(f'{f["id"]} is {L[rule["bucket"]]}, but the review labeled it "{f["label"]}".')
+        if rule.get("by") == "code" and rule["bucket"] in ACTIVE:
+            actual = code_by_id.get(f["id"])
+            if not actual and f["id"] not in deferred:
+                problems.append(f"Invented code finding: {f['id']} was not produced by the checker.")
+            elif actual and f["section"] != actual["section"]:
+                problems.append(f'{f["id"]} section must be "{actual["section"]}", not "{f["section"]}".')
 
     cited = {f["id"] for f in review["findings"]}
     for c in result["findings"]:
         if c["id"] not in cited:
             problems.append(f"Dropped a code finding: {c['id']} ({c['section']}).")
 
+    resolve_section = _section_resolver(rules)
+    flagged_sections = {name for f in review["findings"] for name in resolve_section(f["section"])}
+    good = "|".join(review["good_line"].split("|")[1:])
+    for section in resolve_section(good):
+        if section in flagged_sections:
+            problems.append(f"Good list contradicts findings: {section.replace('_', ' ')} has a finding.")
+
     must_fix = [f for f in review["findings"] if (by_id.get(f["id"]) or {}).get("bucket") == "must_fix"]
     verdict = review["verdict_lines"][0] if review["verdict_lines"] else ""
     if must_fix:
-        if not verdict.startswith(V["blocked"]):
-            problems.append(f'Verdict contradicts findings: there are Must Fix items, so it must start with "{V["blocked"]}".')
+        prefix = V["blocked"] + ":"
+        if not verdict.startswith(prefix):
+            problems.append(f'Verdict contradicts findings: there are Must Fix items, so it must start with "{prefix}".')
         else:
-            for f in must_fix:
-                if f["id"] not in verdict:
-                    problems.append(f"Verdict doesn't list Must Fix item {f['id']}.")
+            expected_ids = list(dict.fromkeys(f["id"] for f in must_fix))
+            actual_ids = list(dict.fromkeys(s.strip() for s in verdict[len(prefix):].split(",")))
+            for rule_id in expected_ids:
+                if rule_id not in actual_ids:
+                    problems.append(f"Verdict doesn't list Must Fix item {rule_id}.")
+            for rule_id in actual_ids:
+                if rule_id not in expected_ids:
+                    problems.append(f'Verdict lists an unexpected Must Fix ID: "{rule_id}".')
     elif verdict != V["clear"]:
         problems.append(f'Verdict contradicts findings: no Must Fix items, so it must be exactly "{V["clear"]}".')
     return {"passed": not problems, "problems": problems}

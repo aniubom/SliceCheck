@@ -94,6 +94,8 @@ Your team has its own rules. Add them.
 
 Eight invented sample tickets in three formats (Wrike-style, Jira-style, plain) live in [`examples/`](examples/), each with expected results. `npm test` runs them, and GitHub runs them on every change.
 
+Tests require Node and Python 3. If Python isn't on your PATH, set `PYTHON` to the path of its executable.
+
 ---
 
 MIT License · Built by Ani Ubom · [aubom.online](https://aubom.online) · [LinkedIn](https://www.linkedin.com/in/aniemaubom/)

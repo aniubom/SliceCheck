@@ -6,7 +6,7 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 
 test("MCP server: check, verify and rules tools work end to end", async () => {
   const client = new Client({ name: "test", version: "1.0.0" });
-  await client.connect(new StdioClientTransport({ command: "node", args: ["mcp/server.mjs"] }));
+  await client.connect(new StdioClientTransport({ command: process.execPath, args: ["mcp/server.mjs"] }));
   try {
     const tools = (await client.listTools()).tools.map((t) => t.name).sort();
     assert.deepEqual(tools, ["check_ticket", "get_rules", "verify_review"]);
@@ -29,6 +29,21 @@ VERDICT
 
     const fail = await client.callTool({ name: "verify_review", arguments: { ticket, review: good.replace(/🟡 Heads Up \| HU-04.*\n/, "") } });
     assert.ok(fail.content[0].text.startsWith("FAIL"));
+
+    const clean = fs.readFileSync("examples/01-clean-jira.md", "utf8");
+    const makeReview = (line, goodSection, ids) =>
+      `FINDINGS\n${line}\nGOOD\n✅ Good | ${goodSection}\nVERDICT\n🔴 Needs attention: ${ids}`;
+    const regressions = [
+      [clean, makeReview("🔴 Must Fix | MF-01 | Problem statement | Missing.", "Assignee", "MF-01")],
+      [fs.readFileSync("examples/03-missing-problem-plain.txt", "utf8"),
+        makeReview("🔴 Must Fix | MF-01 | Dependencies | Missing.", "Assignee", "MF-01")],
+      [clean, makeReview("🔴 Must Fix | MF-06 | User story and AC | Typo.", "AC", "MF-06")],
+      [clean, makeReview("🔴 Must Fix | MF-06 | User story and AC | Typo.", "Assignee", "MF-06, MF-05")],
+    ];
+    for (const [ticket, review] of regressions) {
+      const result = await client.callTool({ name: "verify_review", arguments: { ticket, review } });
+      assert.ok(result.content[0].text.startsWith("FAIL"), review);
+    }
 
     const rules = await client.callTool({ name: "get_rules", arguments: {} });
     assert.ok(rules.content[0].text.includes("MF-01"));

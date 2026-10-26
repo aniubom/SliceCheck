@@ -1,11 +1,13 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import path from "node:path";
 import yaml from "js-yaml";
 import { parseTicket } from "../src/parse.js";
 import { checkTicket } from "../src/check.js";
 import { buildPrompt } from "../src/prompt.js";
 import { verifyReview } from "../src/verify.js";
+import { runPython, withTempDir } from "./helpers/runtime.js";
 
 const rules = yaml.load(fs.readFileSync("rules.yaml", "utf8"));
 const expected = yaml.load(fs.readFileSync("examples/expected.yaml", "utf8"));
@@ -77,33 +79,32 @@ test("copilot-prompt.md matches rules.yaml", async () => {
 test("skill folder is self-contained and in sync", async () => {
   const { execFileSync } = await import("node:child_process");
   assert.ok(!fs.existsSync("skills/slicecheck/rules.yaml"), "the skill reads scripts/rules.json only");
-  const out = execFileSync("node", ["skills/slicecheck/scripts/slicecheck.mjs", "check", "examples/04-missing-ac-jira.md"], { encoding: "utf8" });
+  const out = execFileSync(process.execPath, ["skills/slicecheck/scripts/slicecheck.mjs", "check", "examples/04-missing-ac-jira.md"], { encoding: "utf8" });
   assert.ok(out.includes("MF-04"));
 });
 
 test("Python engine matches the JavaScript engine on every sample", async () => {
-  const { execFileSync } = await import("node:child_process");
   assert.deepEqual(JSON.parse(fs.readFileSync("python/rules.json", "utf8")), rules,
     "python/rules.json is out of date: run npm run build:skill");
   for (const file of Object.keys(expected)) {
     const text = read(file);
-    const py = JSON.parse(execFileSync("python3", ["python/slicecheck.py", "check", `examples/${file}`, "--json"], { encoding: "utf8" }));
+    const py = JSON.parse(runPython(["python/slicecheck.py", "check", `examples/${file}`, "--json"]));
     const js = run(text);
     assert.equal(py.stage, js.stage, file);
     assert.deepEqual(py.findings, js.findings, file);
     assert.deepEqual(py.notFound, js.notFound, file);
-    const pyPrompt = execFileSync("python3", ["python/slicecheck.py", "prompt", `examples/${file}`], { encoding: "utf8" });
+    const pyPrompt = runPython(["python/slicecheck.py", "prompt", `examples/${file}`]);
     assert.equal(pyPrompt.trimEnd(), buildPrompt(text, js, rules), `${file}: prompt differs`);
   }
 });
 
 test("Python verify agrees with JavaScript verify", async () => {
-  const { execFileSync } = await import("node:child_process");
-  fs.writeFileSync("/tmp/sc-bad-review.txt", "FINDINGS\n🟡 Heads Up | IG-04 | Assignee | Empty.\nGOOD\n✅ Good | x\nVERDICT\n✅ Clear to proceed\n");
-  let code = 0;
-  try { execFileSync("python3", ["python/slicecheck.py", "verify", "examples/02-wrike-in-dev.txt", "/tmp/sc-bad-review.txt"], { encoding: "utf8" }); }
-  catch (e) { code = e.status; }
-  assert.equal(code, 2);
+  withTempDir((dir) => {
+    const review = path.join(dir, "bad-review.txt");
+    fs.writeFileSync(review, "FINDINGS\n🟡 Heads Up | IG-04 | Assignee | Empty.\nGOOD\n✅ Good | x\nVERDICT\n✅ Clear to proceed\n");
+    assert.throws(() => runPython(["python/slicecheck.py", "verify", "examples/02-wrike-in-dev.txt", review]),
+      (error) => error.status === 2);
+  });
 });
 
 test("ChatGPT and Copilot kits carry the current engine and rules", () => {
@@ -119,7 +120,6 @@ test("ChatGPT and Copilot kits carry the current engine and rules", () => {
 });
 
 test("verified review renders the same in JavaScript and Python", async () => {
-  const { execFileSync } = await import("node:child_process");
   const { renderReview } = await import("../src/render.js");
   const review = `FINDINGS
 🔴 Must Fix | MF-05 | Acceptance criteria | AC-3 has no pass/fail outcome.
@@ -131,8 +131,7 @@ VERDICT
   const js = renderReview(review, rules);
   assert.ok(js.startsWith("**SliceCheck review**"));
   assert.ok(!/\bPASS\b/.test(js) && !/verif/i.test(js), "verification must stay silent in the rendered review");
-  fs.writeFileSync("/tmp/sc-review.txt", review);
-  const py = execFileSync("python3", ["-c", `import sys; sys.path.insert(0,'python'); import slicecheck as s; print(s.render_review(open('/tmp/sc-review.txt',encoding='utf-8').read(), s.load_rules('python/rules.json')))`], { encoding: "utf8" });
+  const py = runPython(["-c", "import sys; sys.path.insert(0,'python'); import slicecheck as s; print(s.render_review(sys.stdin.read(), s.load_rules('python/rules.json')))"], { input: review });
   assert.equal(py.trimEnd(), js);
 });
 
@@ -151,20 +150,20 @@ test("code findings never repeat their message in the detail", async () => {
   const { findingText } = await import("../src/check.js");
   assert.equal(findingText({ message: "Estimate or story points are empty.", detail: "empty" }), "Estimate or story points are empty.");
   assert.equal(findingText({ message: "AC numbering has a gap.", detail: "jumps from AC-1 to AC-3" }), "AC numbering has a gap (jumps from AC-1 to AC-3).");
-  const { execFileSync } = await import("node:child_process");
-  const py = execFileSync("python3", ["-c", "import sys; sys.path.insert(0,'python'); import slicecheck as s; print(s.finding_text({'message':'Estimate or story points are empty.','detail':'empty'}))"], { encoding: "utf8" });
+  const py = runPython(["-c", "import sys; sys.path.insert(0,'python'); import slicecheck as s; print(s.finding_text({'message':'Estimate or story points are empty.','detail':'empty'}))"]);
   assert.equal(py.trim(), "Estimate or story points are empty.");
 });
 
 test("each engine runs from a flat two-file download", async () => {
   const { execFileSync } = await import("node:child_process");
-  const os = await import("node:os");
-  const path = await import("node:path");
   const ticket = path.resolve("examples/04-missing-ac-jira.md");
-  for (const [engine, files] of [["node", ["skills/slicecheck/scripts/slicecheck.mjs"]], ["python3", ["python/slicecheck.py"]]]) {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "sc-"));
-    for (const f of [...files, "python/rules.json"]) fs.copyFileSync(f, path.join(dir, path.basename(f)));
-    const out = execFileSync(engine, [path.basename(files[0]), "check", ticket], { cwd: dir, encoding: "utf8" });
-    assert.ok(out.includes("MF-04"), engine);
+  for (const engine of ["skills/slicecheck/scripts/slicecheck.mjs", "python/slicecheck.py"]) {
+    withTempDir((dir) => {
+      for (const file of [engine, "python/rules.json"]) fs.copyFileSync(file, path.join(dir, path.basename(file)));
+      const args = [path.basename(engine), "check", ticket];
+      const out = engine.endsWith(".py") ? runPython(args, { cwd: dir })
+        : execFileSync(process.execPath, args, { cwd: dir, encoding: "utf8" });
+      assert.ok(out.includes("MF-04"), engine);
+    });
   }
 });
