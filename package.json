@@ -1,6 +1,6 @@
 {
   "name": "slicecheck",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Ticket peer review, minus the noise.",
   "type": "module",
   "bin": {

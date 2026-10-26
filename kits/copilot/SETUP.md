@@ -2,7 +2,7 @@
 
 Build once, then just paste tickets. SliceCheck runs its checks using Microsoft 365 Copilot's code tool. Ticket content is processed by Microsoft 365 Copilot, and its handling may depend on your organization's settings, policies, and Microsoft 365 service terms. Follow your organization's data-handling rules and only submit tickets you're authorized to process in Copilot.
 
-You need: Microsoft 365 Copilot with Agent Builder available to you (your company's settings decide this), and these three files from this folder:
+You need: Microsoft 365 Copilot with Agent Builder available to you (your company's settings decide this), and these three files from [`slicecheck-copilot-kit.zip`](https://github.com/aniubom/SliceCheck/releases/latest/download/slicecheck-copilot-kit.zip):
 - `instructions.txt`
 - `slicecheck.py.txt` and `rules.json.txt`
 

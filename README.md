@@ -49,13 +49,13 @@ The rules travel with every review, so nothing depends on the AI remembering the
 
 SliceCheck runs inside the AI you already use. Set it up once, then just paste tickets. The AI runs the checks, writes the review, verifies it, and fixes it before you see it.
 
-**1. As a skill (Claude, Codex, GitHub Copilot, Cursor, Gemini CLI and other tools that support SKILL.md).** Copy the [`skills/slicecheck`](skills/slicecheck/SKILL.md) folder into your tool's skills folder (for Claude Code: `~/.claude/skills/`). It's self-contained: the scripts, the rules, the instructions. Uses Python if you have it, Node if you don't. Nothing to install.
+**1. As a skill (Claude, Codex, GitHub Copilot, Cursor, Gemini CLI and other tools that support SKILL.md).** Download [`slicecheck-skill.zip`](https://github.com/aniubom/SliceCheck/releases/latest/download/slicecheck-skill.zip) and unzip it into your tool's skills folder (for Claude Code: `~/.claude/skills/`). It's self-contained: the scripts, the rules, the instructions. Uses Python if you have it, Node if you don't. Nothing to install.
 
 **2. As an MCP server (Claude Desktop, Claude Code, VS Code Copilot, Cursor).** Adds `check_ticket`, `verify_review` and `get_rules` as tools in your chat. Setup: [`mcp/README.md`](mcp/README.md).
 
 **3. Microsoft 365 Copilot or ChatGPT at work.** Build a SliceCheck agent once, with no install and no IT ticket for a personal agent (your company's settings decide what's available). After that, open the agent and paste tickets. It runs the same checks and verifies itself using the built-in code tool.
-- Copilot (Agent Builder): [`kits/copilot/SETUP.md`](kits/copilot/SETUP.md)
-- ChatGPT (Custom GPT): [`kits/chatgpt/SETUP.md`](kits/chatgpt/SETUP.md)
+- Copilot (Agent Builder): download [`slicecheck-copilot-kit.zip`](https://github.com/aniubom/SliceCheck/releases/latest/download/slicecheck-copilot-kit.zip), then follow [`kits/copilot/SETUP.md`](kits/copilot/SETUP.md)
+- ChatGPT (Custom GPT): download [`slicecheck-chatgpt-kit.zip`](https://github.com/aniubom/SliceCheck/releases/latest/download/slicecheck-chatgpt-kit.zip), then follow [`kits/chatgpt/SETUP.md`](kits/chatgpt/SETUP.md)
 
 **4. No setup at all.** Paste the prompt in [`copilot-prompt.md`](copilot-prompt.md) into any AI once per chat, then paste tickets. Less exact: the AI judges every rule itself and nothing verifies it.
 

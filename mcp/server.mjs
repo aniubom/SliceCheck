@@ -32,7 +32,7 @@ const loadRules = () => yaml.load(fs.readFileSync(rulesPath(), "utf8"));
 const text = (s) => ({ content: [{ type: "text", text: s }] });
 
 const server = new McpServer(
-  { name: "slicecheck", version: "0.1.0" },
+  { name: "slicecheck", version: "1.0.0" },
   {
     instructions: `SliceCheck: ticket peer review, minus the noise.
 When the user asks to peer review, check or QA a ticket or user story, always use these tools. Never review the ticket yourself without them.
