@@ -1,0 +1,40 @@
+name: package-exports
+on: [push, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm run build:skill
+      - run: npm test
+      - name: Package exports and source backup
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          (cd skills && zip -qr "$GITHUB_WORKSPACE/dist/slicecheck-skill.zip" slicecheck)
+          (cd kits/chatgpt && zip -qr "$GITHUB_WORKSPACE/dist/slicecheck-chatgpt-kit.zip" .)
+          (cd kits/copilot && zip -qr "$GITHUB_WORKSPACE/dist/slicecheck-copilot-kit.zip" .)
+          git archive --format=zip --output=dist/slicecheck-source-backup.zip HEAD
+          {
+            echo "SliceCheck export manifest"
+            echo "Commit: $GITHUB_SHA"
+            echo "Created by: GitHub Actions package-exports workflow"
+            echo
+            echo "slicecheck-skill.zip: self-contained skill folder"
+            echo "slicecheck-chatgpt-kit.zip: ChatGPT Custom GPT setup kit"
+            echo "slicecheck-copilot-kit.zip: Microsoft 365 Copilot setup kit"
+            echo "slicecheck-source-backup.zip: tracked repository snapshot at this commit"
+          } > dist/EXPORT-MANIFEST.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: slicecheck-exports-${{ github.sha }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 90
