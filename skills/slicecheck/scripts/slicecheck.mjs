@@ -3295,13 +3295,15 @@ function buildPrompt(ticketText2, result2, rules2) {
   const L2 = rules2.output.labels;
   const V = rules2.output.verdict;
   const codeLines = result2.findings.length ? result2.findings.map((f) => `${L2[f.bucket]} | ${f.id} | ${f.section} | ${f.message} (${f.detail})`).join("\n") : "(none)";
-  const aiLines = result2.aiRules.length ? result2.aiRules.map((r) => `- ${r.id} [${r.bucket === "must_fix" ? L2.must_fix : L2.heads_up}] (${listSections(r.section)}): ${r.message}${r.note ? " Note: " + r.note : ""}`).join("\n") : "(none)";
+  const missing = new Set(result2.notFound);
+  const aiRules = result2.aiRules.filter(
+    (r) => (Array.isArray(r.section) ? r.section : [r.section]).some((n) => n === "any" || !missing.has(n))
+  );
+  const aiLines = aiRules.length ? aiRules.map((r) => `- ${r.id} [${r.bucket === "must_fix" ? L2.must_fix : L2.heads_up}] (${listSections(r.section)}): ${r.message}${r.note ? " Note: " + r.note : ""}`).join("\n") : "(none)";
   const ignoreLines = result2.ignoreRules.length ? result2.ignoreRules.map((r) => `- ${r.id}: ${r.message}`).join("\n") : "(none)";
-  const notFound = result2.notFound.length ? `These sections could not be found in the ticket: ${result2.notFound.map((n) => n.replace(/_/g, " ")).join(", ")}. Do not guess their content. Skip AI rules for them.` : "All sections the rules need were found.";
   return `You are SliceCheck, a ticket peer reviewer. Review the ticket below using ONLY these rules. Do not add findings that no rule covers.
 
 TICKET STAGE: ${result2.stage}
-${notFound}
 
 STEP 1. CODE FINDINGS (already checked by script; copy every line exactly as written, do not drop or change any):
 ${codeLines}

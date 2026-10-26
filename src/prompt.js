@@ -15,8 +15,14 @@ export function buildPrompt(ticketText, result, rules) {
         .join("\n")
     : "(none)";
 
-  const aiLines = result.aiRules.length
-    ? result.aiRules
+  // Judgment rules only for sections this ticket has. Missing optional sections
+  // are never mentioned (missing required ones are already code findings).
+  const missing = new Set(result.notFound);
+  const aiRules = result.aiRules.filter((r) =>
+    (Array.isArray(r.section) ? r.section : [r.section]).some((n) => n === "any" || !missing.has(n))
+  );
+  const aiLines = aiRules.length
+    ? aiRules
         .map((r) => `- ${r.id} [${r.bucket === "must_fix" ? L.must_fix : L.heads_up}] (${listSections(r.section)}): ${r.message}${r.note ? " Note: " + r.note : ""}`)
         .join("\n")
     : "(none)";
@@ -25,14 +31,9 @@ export function buildPrompt(ticketText, result, rules) {
     ? result.ignoreRules.map((r) => `- ${r.id}: ${r.message}`).join("\n")
     : "(none)";
 
-  const notFound = result.notFound.length
-    ? `These sections could not be found in the ticket: ${result.notFound.map((n) => n.replace(/_/g, " ")).join(", ")}. Do not guess their content. Skip AI rules for them.`
-    : "All sections the rules need were found.";
-
   return `You are SliceCheck, a ticket peer reviewer. Review the ticket below using ONLY these rules. Do not add findings that no rule covers.
 
 TICKET STAGE: ${result.stage}
-${notFound}
 
 STEP 1. CODE FINDINGS (already checked by script; copy every line exactly as written, do not drop or change any):
 ${codeLines}

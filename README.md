@@ -96,4 +96,4 @@ Eight invented sample tickets in three formats (Wrike-style, Jira-style, plain) 
 
 ---
 
-Built by Ani Ubom · [aubom.online](https://aubom.online) · [LinkedIn](https://www.linkedin.com/in/aniemaubom/)
+MIT License · Built by Ani Ubom · [aubom.online](https://aubom.online) · [LinkedIn](https://www.linkedin.com/in/aniemaubom/)

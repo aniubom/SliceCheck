@@ -292,19 +292,19 @@ def build_prompt(ticket_text, result, rules):
     V = rules["output"]["verdict"]
     code = "\n".join(f"{L[f['bucket']]} | {f['id']} | {f['section']} | {f['message']} ({f['detail']})"
                      for f in result["findings"]) or "(none)"
+    # Judgment rules only for sections this ticket has. Missing optional sections
+    # are never mentioned (missing required ones are already code findings).
+    missing = set(result["notFound"])
+    ai_rules = [r for r in result["aiRules"] if any(n == "any" or n not in missing for n in _sections_of(r))]
     ai = "\n".join(
         f"- {r['id']} [{L['must_fix'] if r['bucket'] == 'must_fix' else L['heads_up']}] "
         f"({', '.join(n.replace('_', ' ') for n in _sections_of(r))}): {r['message']}"
         + (f" Note: {r['note']}" if r.get("note") else "")
-        for r in result["aiRules"]) or "(none)"
+        for r in ai_rules) or "(none)"
     ignore = "\n".join(f"- {r['id']}: {r['message']}" for r in result["ignoreRules"]) or "(none)"
-    nf = (f"These sections could not be found in the ticket: {', '.join(n.replace('_', ' ') for n in result['notFound'])}. "
-          "Do not guess their content. Skip AI rules for them.") if result["notFound"] else \
-        "All sections the rules need were found."
     return f'''You are SliceCheck, a ticket peer reviewer. Review the ticket below using ONLY these rules. Do not add findings that no rule covers.
 
 TICKET STAGE: {result["stage"]}
-{nf}
 
 STEP 1. CODE FINDINGS (already checked by script; copy every line exactly as written, do not drop or change any):
 {code}

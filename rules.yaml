@@ -35,8 +35,9 @@ output:
   verdict:
     clear: "✅ Clear to proceed"
     blocked: "🔴 Needs attention before refinement"
-  # The verdict is the last line. Any Must Fix finding means the verdict is
-  # "blocked" and it lists only the Must Fix items.
+  # Any Must Fix finding means the verdict is "blocked" and lists only the
+  # Must Fix IDs. The verdict is the last line; the only line ever allowed
+  # after it is the "Not verified" warning, when a review couldn't be verified.
   cite_rule_ids: true
 
 # ---------------------------------------------------------------------------
