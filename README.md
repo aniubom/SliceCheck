@@ -28,8 +28,6 @@ It reads [`START-HERE.md`](START-HERE.md), runs SliceCheck's checks in its own c
 
 ## Why it exists
 
-## Why it exists
-
 I originally built SliceCheck to help with peer reviews on my own team. 
 
 At the time, we were reviewing tickets manually, and I saw an opportunity to use AI to make the process faster and more consistent.
