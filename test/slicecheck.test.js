@@ -73,3 +73,11 @@ test("copilot-prompt.md matches rules.yaml", async () => {
   assert.ok(fs.readFileSync("copilot-prompt.md", "utf8").includes(buildStandalonePrompt(rules)),
     "copilot-prompt.md is out of date: regenerate it with `node bin/slicecheck.mjs standalone`");
 });
+
+test("skill folder is self-contained and in sync", async () => {
+  const { execFileSync } = await import("node:child_process");
+  assert.equal(fs.readFileSync("skills/slicecheck/rules.yaml", "utf8"), fs.readFileSync("rules.yaml", "utf8"),
+    "skills/slicecheck/rules.yaml is out of date: run npm run build:skill");
+  const out = execFileSync("node", ["skills/slicecheck/scripts/slicecheck.mjs", "check", "examples/04-missing-ac-jira.md"], { encoding: "utf8" });
+  assert.ok(out.includes("MF-04"));
+});

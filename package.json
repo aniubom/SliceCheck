@@ -3,8 +3,18 @@
   "version": "0.1.0",
   "description": "Ticket peer review, minus the noise.",
   "type": "module",
-  "bin": { "slicecheck": "bin/slicecheck.mjs" },
-  "scripts": { "test": "node --test test/*.test.js" },
-  "dependencies": { "js-yaml": "^4.1.0" },
-  "license": "MIT"
+  "bin": {
+    "slicecheck": "bin/slicecheck.mjs"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "build:skill": "node scripts/build-skill.mjs"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
 }

@@ -1,0 +1,294 @@
+# SliceCheck rules
+# Ticket peer review, minus the noise.
+#
+# This file is the single source of truth. Every review, in the web tool or in
+# an agent, follows these rules and nothing else.
+#
+# Buckets:
+#   must_fix  - blocks the ticket from moving forward
+#   heads_up  - worth noting, never a blocker
+#   ignore    - never flagged, even if it looks wrong
+#   off       - rule is disabled
+#
+# Who checks it:
+#   code  - checked by script, same result every time
+#   ai    - needs judgment, checked by the AI reviewer
+#
+# Check types (code rules only):
+#   present         section exists in the ticket
+#   not_empty       section has real content (not blank, "Empty", "TBD", "-")
+#   not_placeholder no template placeholders like [date], mm/dd/yy, <name>
+#   not_na          section is not marked N/A, NA or "not applicable"
+#   sequential      numbered items have no gaps (AC-1, AC-2, AC-3...)
+#   no_duplicates   no block of text repeated near word-for-word
+
+version: 1
+
+# ---------------------------------------------------------------------------
+# Output format
+# ---------------------------------------------------------------------------
+output:
+  labels:
+    must_fix: "🔴 Must Fix"
+    heads_up: "🟡 Heads Up"
+    good: "✅ Good"
+  verdict:
+    clear: "✅ Clear to proceed"
+    blocked: "🔴 Needs attention before refinement"
+  # The verdict is the last line. Any Must Fix finding means the verdict is
+  # "blocked" and it lists only the Must Fix items.
+  cite_rule_ids: true
+
+# ---------------------------------------------------------------------------
+# Stages
+# Some rules change with the ticket's stage. The reviewer reads the stage
+# from the ticket's status field, matched against these names.
+# ---------------------------------------------------------------------------
+stages:
+  refinement: ["ready for refinement", "refinement", "draft", "new", "backlog", "dor"]
+  ready: ["ready for sprint", "ready for dev", "ready", "approved"]
+  in_progress: ["in dev", "in development", "in progress", "in qa", "testing"]
+
+# ---------------------------------------------------------------------------
+# Parsing
+# What counts as "empty" and which template lines to skip when reading a
+# section. Add your own template's instruction text here.
+# ---------------------------------------------------------------------------
+parsing:
+  empty_values: ["", "empty", "tbd", "-", "--", "none", "n/a yet"]
+  na_values: ["n/a", "na", "not applicable", "none required"]
+  placeholder_patterns: ['\[[^\]]*\]', 'mm/dd/yy(yy)?', '<[^>]+>', 'xx/xx', 'tbd']
+  template_lines:
+    - '^describe\b'
+    - '^list (specific|known)\b'
+    - '^if applicable\b'
+    - '^summarize\b'
+    - '^identify\b'
+    - '^if there (are|is)\b'
+    - '^as a \(role name\)'
+    - '^given/when/then'
+    - '^will a pop-up'
+    - '^once all approvers'
+
+# ---------------------------------------------------------------------------
+# Sections
+# Names the reviewer looks for. Add your team's own wording to the aliases.
+# If a section can't be found, the reviewer says so instead of guessing.
+# ---------------------------------------------------------------------------
+sections:
+  problem_statement:
+    aliases: ["problem statement", "problem", "background", "context", "why"]
+  user_story:
+    aliases: ["user story", "story", "as a"]
+  acceptance_criteria:
+    aliases: ["acceptance criteria", "ac", "criteria", "given/when/then"]
+  approval:
+    aliases: ["approval", "approval status", "approver", "sign-off", "final decision for task", "a task needs approval"]
+  estimate:
+    field: true          # a single value, like Wrike/Jira field lists
+    aliases: ["story points", "estimate", "points", "size", "effort"]
+  assignee:
+    field: true          # a single value, like Wrike/Jira field lists
+    aliases: ["assignee", "assigned to", "owner", "developer"]
+  status:
+    field: true          # a single value, like Wrike/Jira field lists
+    aliases: ["status", "state", "stage"]
+  dependencies:
+    aliases: ["dependencies", "integration impacts", "integration impacts/partner touch points", "integrations", "partner touch points", "blocked by"]
+  user_facing_message:
+    aliases: ["release note", "change message", "organizational readiness message", "comms", "announcement"]
+  process_flow:
+    aliases: ["process flow", "workflow", "flow diagram"]
+  process_flow_board:
+    aliases: ["miro", "process flow board", "diagram link", "lucid", "visio"]
+  approved_requirements_link:
+    aliases: ["approved requirements pdf", "approved version", "signed-off requirements"]
+  vendor_estimate:
+    field: true          # a single value, like Wrike/Jira field lists
+    aliases: ["vendor estimate", "vendor", "estimate received from vendor"]
+  tech_review_date:
+    aliases: ["technical design review", "tech lead review", "requirements review with tech leads"]
+  notes:
+    aliases: ["notes", "ba notes", "refinement notes", "additional notes"]
+  permissions:
+    aliases: ["permissions access", "permissions", "roles and permissions"]
+  dates:
+    aliases: ["timeline", "ready for test", "ready for prod", "due date", "peer review completed"]
+
+# ---------------------------------------------------------------------------
+# Layer 1: Default rules (on for everyone)
+# ---------------------------------------------------------------------------
+rules:
+
+  # --- Must Fix -------------------------------------------------------------
+
+  - id: MF-01
+    bucket: must_fix
+    by: code
+    section: problem_statement
+    check: not_empty
+    message: "Problem statement is missing."
+
+  - id: MF-02
+    bucket: must_fix
+    by: ai
+    section: problem_statement
+    message: "Problem statement is too vague to tell whose pain this is and why it matters."
+
+  - id: MF-03
+    bucket: must_fix
+    by: ai
+    section: user_story
+    message: "User story is missing the role, the want, or the benefit."
+
+  - id: MF-04
+    bucket: must_fix
+    by: code
+    section: acceptance_criteria
+    check: not_empty
+    message: "Acceptance criteria are missing."
+
+  - id: MF-05
+    bucket: must_fix
+    by: ai
+    section: acceptance_criteria
+    message: "An acceptance criterion is not testable: there's no clear pass/fail outcome."
+
+  - id: MF-06
+    bucket: must_fix
+    by: ai
+    section: [user_story, acceptance_criteria, user_facing_message]
+    message: "Typo or unclear language in the story, AC, or a user-facing message."
+
+  # --- Heads Up -------------------------------------------------------------
+
+  - id: HU-01
+    bucket: heads_up
+    by: code
+    section: estimate
+    check: not_empty
+    message: "Estimate or story points are empty."
+
+  - id: HU-02
+    bucket: heads_up
+    by: code
+    section: assignee
+    check: not_empty
+    when: { stage_not: refinement }
+    message: "Assignee is empty and the ticket is past refinement."
+
+  - id: HU-03
+    bucket: heads_up
+    by: code
+    section: acceptance_criteria
+    check: sequential
+    message: "AC numbering has a gap (for example, it starts at AC-2)."
+
+  - id: HU-04
+    bucket: heads_up
+    by: code
+    section: any
+    check: no_duplicates
+    message: "A block of text is repeated, likely a copy-paste leftover."
+
+  - id: HU-05
+    bucket: heads_up
+    by: ai
+    section: dependencies
+    message: "A dependency or integration is mentioned with no owner or date."
+
+  # --- Ignore ---------------------------------------------------------------
+  # These are never flagged. They exist so the reviewer knows what NOT to say.
+
+  - id: IG-01
+    bucket: ignore
+    section: dates
+    match: placeholder
+    message: "Placeholder dates in fields that get filled in later."
+
+  - id: IG-02
+    bucket: ignore
+    section: any
+    match: template_instructions
+    message: "Template instruction text left in a section (for example 'Describe the problem from the perspective of the user')."
+
+  - id: IG-03
+    bucket: ignore
+    section: any
+    match: marked_na
+    unless_required: true
+    message: "Optional sections marked N/A."
+
+  - id: IG-04
+    bucket: ignore
+    section: assignee
+    match: empty
+    when: { stage: refinement }
+    message: "Assignee empty at the refinement stage."
+
+  - id: IG-05
+    bucket: ignore
+    section: status
+    match: { stage: refinement }
+    message: "Status showing a refinement stage. That's expected at review time."
+
+# ---------------------------------------------------------------------------
+# Layer 2: Team pack example (off by default)
+# An example of how a team adds its own conventions. Turn rules on by changing
+# "off" to the bucket you want. Add your own below.
+# ---------------------------------------------------------------------------
+team_pack:
+  name: "Enterprise intake template (example)"
+  rules:
+
+    - id: TP-00
+      bucket: off          # suggested: must_fix
+      by: ai
+      section: approval
+      message: "Approval is required but not attached, and there's no note that it's pending."
+      note: "A pending approval with an approver assigned or a due date set counts as noted."
+
+    - id: TP-01
+      bucket: off          # suggested: must_fix
+      by: code
+      section: user_facing_message
+      check: not_na
+      when: { ticket_is: user_facing }
+      message: "User-facing change has no change message for the field."
+
+    - id: TP-02
+      bucket: off          # suggested: must_fix
+      by: code
+      section: approved_requirements_link
+      check: not_empty
+      when: { approval: complete }
+      message: "Approval is complete but the approved requirements link is blank."
+
+    - id: TP-03
+      bucket: off          # suggested: heads_up
+      by: code
+      section: process_flow_board
+      check: not_empty
+      when: { section_not_na: process_flow }
+      message: "Process flow is required but no diagram is attached."
+
+    - id: TP-04
+      bucket: off          # suggested: heads_up
+      by: code
+      section: vendor_estimate
+      check: not_empty
+      message: "Vendor estimate not confirmed."
+
+    - id: TP-05
+      bucket: off          # suggested: heads_up
+      by: code
+      section: tech_review_date
+      check: not_placeholder
+      message: "Tech lead review date not filled in."
+
+    - id: TP-06
+      bucket: off          # suggested: ignore
+      by: code
+      section: permissions
+      match: roles_only
+      message: "Permissions section lists roles only (actions live in the story and AC). Don't flag."

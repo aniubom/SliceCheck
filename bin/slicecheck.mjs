@@ -3,7 +3,7 @@
 //   slicecheck check  <ticket-file>                  code findings only
 //   slicecheck prompt <ticket-file>                  full review prompt for any AI
 //   slicecheck verify <ticket-file> <review-file>    check an AI review against the rules
-// Options: --rules <path>   (default: ./rules.yaml, then the one shipped with SliceCheck)
+// Options: --rules <path>   (default: ./slicecheck.rules.yaml, then the shipped rules.yaml)
 //          --json           machine-readable output
 
 import fs from "node:fs";
@@ -27,15 +27,24 @@ const json = args.includes("--json");
 if (json) args.splice(args.indexOf("--json"), 1);
 const rulesArg = flag("--rules");
 const [cmd, ticketPath, reviewPath] = args;
-if (cmd === "standalone") {
-  const rp = rulesArg || (fs.existsSync("rules.yaml") ? "rules.yaml" : path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "rules.yaml"));
-  console.log(buildStandalonePrompt(yaml.load(fs.readFileSync(rp, "utf8"))));
-  process.exit(0);
-}
-
+// Rules: --rules <path>, else the team's slicecheck.rules.yaml in the current
+// folder, else the default rules.yaml shipped one level above this script.
 const here = path.dirname(fileURLToPath(import.meta.url));
 const rulesPath =
-  rulesArg || (fs.existsSync("rules.yaml") ? "rules.yaml" : path.join(here, "..", "rules.yaml"));
+  rulesArg ||
+  (fs.existsSync("slicecheck.rules.yaml") ? "slicecheck.rules.yaml" : path.join(here, "..", "rules.yaml"));
+
+// "-" reads from standard input, so agents can pipe text without saving a file.
+const readInput = (p) => fs.readFileSync(p === "-" ? 0 : p, "utf8");
+
+if (cmd === "standalone") {
+  console.log(buildStandalonePrompt(yaml.load(fs.readFileSync(rulesPath, "utf8"))));
+  process.exit(0);
+}
+if (cmd === "rules") {
+  console.log(fs.readFileSync(rulesPath, "utf8"));
+  process.exit(0);
+}
 
 function usage(code = 1) {
   console.log(`SliceCheck: ticket peer review, minus the noise.
@@ -44,6 +53,9 @@ function usage(code = 1) {
   slicecheck prompt <ticket-file>                  full review prompt for any AI
   slicecheck verify <ticket-file> <review-file>    check an AI review against the rules
   slicecheck standalone                            one-time prompt for Copilot/ChatGPT (no scripts)
+  slicecheck rules                                 print the rules in use
+
+  Use "-" as a file name to read from standard input.
 
   Options: --rules <path>   --json`);
   process.exit(code);
@@ -53,7 +65,7 @@ if (!cmd || !ticketPath || !["check", "prompt", "verify"].includes(cmd)) usage()
 if (cmd === "verify" && !reviewPath) usage();
 
 const rules = yaml.load(fs.readFileSync(rulesPath, "utf8"));
-const ticketText = fs.readFileSync(ticketPath, "utf8");
+const ticketText = readInput(ticketPath);
 const result = checkTicket(parseTicket(ticketText, rules), rules);
 const L = rules.output.labels;
 
@@ -78,7 +90,7 @@ if (cmd === "prompt") {
 }
 
 if (cmd === "verify") {
-  const res = verifyReview(fs.readFileSync(reviewPath, "utf8"), result, rules);
+  const res = verifyReview(readInput(reviewPath), result, rules);
   if (json) console.log(JSON.stringify(res, null, 2));
   else if (res.passed) console.log("PASS: the review follows the rules.");
   else {
