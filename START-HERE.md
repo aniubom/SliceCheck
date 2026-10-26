@@ -5,9 +5,9 @@ A user wants a ticket (user story, acceptance criteria, fields) peer reviewed. F
 
 ## The one rule
 
-**If you can run code, you must run SliceCheck's scripts.** Do not read the rules and review the ticket yourself. A review you write without the scripts is not a SliceCheck review, even if it looks right. The scripts are what make SliceCheck consistent: they check the mechanical rules, hand you only the judgment calls, and verify your review before the user sees it.
-
-You may review without the scripts only after you have **tried** to run them and they failed (no code tool, or the files can't be loaded). Then follow **No code** at the bottom.
+**Run SliceCheck's scripts, or fail.** There is no manual mode. Never read the rules and review the ticket yourself: a review written without the scripts is not a SliceCheck review, even if it looks right. The only two valid outcomes are:
+1. the review the `verify` script prints, shown exactly, or
+2. this one line, when the scripts can't run or the review can't pass verification: `⚠️ SliceCheck couldn't run here, so this ticket wasn't reviewed.` followed by one short reason (for example "no code tool available").
 
 ## Get the engine
 
@@ -37,29 +37,11 @@ If the user's project has its own `slicecheck.rules.json` (Python) or `slicechec
    python3 python/slicecheck.py verify ticket.txt review.txt
    ```
    - **PASS:** it prints the final review. Go to step 5.
-   - **FAIL:** fix every listed problem, then verify again. If it still fails after 3 tries, show your last review and add one line at the end: `⚠️ Not verified: <the first problem it listed>`.
+   - **FAIL:** fix every listed problem, then verify again. If it still fails after 3 tries, stop and show only the failure line from **The one rule**, with the first problem it listed as the reason.
 
 5. **Show the user exactly the review that verify printed.** Nothing before or after it. Don't mention the scripts, the steps or the verification; it runs silently.
 
 6. Delete `ticket.txt` and `review.txt`.
-
-## No code
-
-Only if you tried to run the scripts and couldn't: follow the rules in `rules.yaml` yourself (every `must_fix` and `heads_up` rule, respecting `when` and the ticket's stage; never flag `ignore` rules; skip `off`). Use the same result format as a verified review:
-
-**SliceCheck review**
-
-🔴 **Must Fix**
-- **MF-05 · Acceptance criteria:** the specific note
-
-🟡 **Heads Up**
-- **HU-01 · Estimate:** the specific note
-
-✅ **Good:** sections with no findings
-
-**Verdict:** 🔴 Needs attention before refinement: MF-05 *(or ✅ Clear to proceed when there's no Must Fix)*
-
-Leave out an empty bucket, and end with one line: `⚠️ Not verified: SliceCheck's scripts couldn't run here.`
 
 ## Changing the rules
 
@@ -67,6 +49,6 @@ If the user asks to change a rule ("stop flagging empty estimates", "we call it 
 
 ## Never
 
-- Never review without the scripts when you can run code.
+- Never write a review yourself. No scripts, no review.
 - Never invent rules, or findings that no rule covers.
 - Never store, repeat or share ticket content outside the review.

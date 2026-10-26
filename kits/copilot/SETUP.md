@@ -23,7 +23,7 @@ Copilot only accepts certain file types as knowledge (.txt is one), so the engin
 
 Paste a sample ticket from the repo's `examples/` folder, for example `07-untestable-ac-typos-jira.md`. A correct result has Must Fix findings MF-05 and MF-06 and the verdict "🔴 Needs attention before refinement". Every sample's expected result is in `examples/expected.yaml`.
 
-**If the review ends with "⚠️ Not verified":** the code interpreter didn't run the uploaded engine. Check that **Create documents, charts, and code** is on and both `.txt` files are uploaded. Some company settings limit what the code interpreter can do. In that case the agent still reviews with your rules, just without the automatic checks and verification.
+**If you get "SliceCheck couldn't run here" instead of a review:** the code interpreter didn't run the uploaded engine. Check that **Create documents, charts, and code** is on and both `.txt` files are uploaded. Some company settings limit what the code interpreter can do. SliceCheck won't guess: it only shows reviews its scripts have checked. If your company blocks the code interpreter, use the no-setup prompt in `copilot-prompt.md` instead.
 
 ## Your team's rules
 

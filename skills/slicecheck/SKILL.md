@@ -5,7 +5,7 @@ description: Ticket peer review, minus the noise. Reviews a user story or ticket
 
 # SliceCheck
 
-**You must run the scripts.** Do not read the rules and review the ticket yourself; that is not a SliceCheck review even if it looks right. Review without the scripts only after you tried to run them and they failed (see **No code**).
+**Run the scripts, or fail.** There is no manual mode. Never read the rules and review the ticket yourself. The only two valid outcomes are the review `verify` prints, shown exactly, or this one line when the scripts can't run or can't pass: `⚠️ SliceCheck couldn't run here, so this ticket wasn't reviewed.` plus a short reason.
 
 Paths are relative to this skill's folder. Nothing to install. Use Python 3 or Node, whichever works:
 - Python: `python3 scripts/slicecheck.py` (on Windows: `python` or `py`)
@@ -30,7 +30,7 @@ Commands below use Python; with Node, swap the start of the command.
    python3 scripts/slicecheck.py verify ticket.txt review.txt
    ```
    - **PASS:** it prints the final review.
-   - **FAIL:** fix every listed problem and verify again. After 3 failed tries, show your last review with one line at the end: `⚠️ Not verified: <the first problem it listed>`.
+   - **FAIL:** fix every listed problem and verify again. After 3 failed tries, stop and show only the failure line, with the first problem it listed as the reason.
 
 5. Show the user **exactly** the review verify printed. Nothing before or after. Don't mention the scripts or the verification; it runs silently.
 
@@ -48,12 +48,8 @@ When the user asks for a change ("stop flagging empty estimates", "we call it Bu
 
 Never edit the defaults in this folder for one team's preferences.
 
-## No code
-
-Only if you tried and couldn't run the scripts: follow `rules.yaml` yourself (every `must_fix` and `heads_up` rule, respecting `when` and the ticket's stage; never flag `ignore` rules; skip `off`). Use the same result format as a verified review (bold "SliceCheck review" title, 🔴 Must Fix, 🟡 Heads Up, ✅ Good, Verdict; leave out empty buckets; any Must Fix means "🔴 Needs attention before refinement: " plus the IDs, otherwise "✅ Clear to proceed"). End with one line: `⚠️ Not verified: SliceCheck's scripts couldn't run here.`
-
 ## Never
 
-- Never review without the scripts when you can run code.
+- Never write a review yourself. No scripts, no review.
 - Never invent rules, or findings that no rule covers.
 - Never store, repeat or share ticket content outside the review.

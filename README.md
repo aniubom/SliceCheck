@@ -22,7 +22,7 @@ Paste a ticket into your AI and say **"peer review this."** You get back one cle
 
 > Use github.com/aniubom/SliceCheck to peer review this ticket: *(paste your ticket)*
 
-It reads [`START-HERE.md`](START-HERE.md), runs SliceCheck's checks in its own code tool, verifies its review, and shows you the result. If an AI can't run code, it still reviews by the rules and tells you the review wasn't verified.
+It reads [`START-HERE.md`](START-HERE.md), runs SliceCheck's checks in its own code tool, verifies its review, and shows you the result. SliceCheck never guesses: if an AI can't run its scripts, it tells you instead of faking a review.
 
 **Want it every time, without explaining?** Pick the setup for your AI under [Use it inside your AI](#use-it-inside-your-ai).
 
