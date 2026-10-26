@@ -35,11 +35,17 @@ The rules travel with every review, so nothing depends on the AI remembering the
 
 SliceCheck runs inside the AI you already use. No copy-paste, no extra tab. The AI runs the checks, writes the review, verifies it, and fixes it before you see it.
 
-**1. As a skill (Claude, Codex, GitHub Copilot, Cursor, Gemini CLI and other tools that support SKILL.md).** Copy the [`skills/slicecheck`](skills/slicecheck/SKILL.md) folder into your tool's skills folder (for Claude Code: `~/.claude/skills/`). It's self-contained: one script, the rules, the instructions. Needs Node 18+, nothing to install.
+**1. As a skill (Claude, Codex, GitHub Copilot, Cursor, Gemini CLI and other tools that support SKILL.md).** Copy the [`skills/slicecheck`](skills/slicecheck/SKILL.md) folder into your tool's skills folder (for Claude Code: `~/.claude/skills/`). It's self-contained: the scripts, the rules, the instructions. Uses Node if you have it, Python if you don't. Nothing to install.
 
 **2. As an MCP server (Claude Desktop, Claude Code, VS Code Copilot, Cursor).** Adds `check_ticket`, `verify_review` and `get_rules` as tools in your chat. Runs on your machine, so tickets never leave it. Setup: [`mcp/README.md`](mcp/README.md).
 
-**3. Copilot or ChatGPT with no setup.** Paste [`copilot-prompt.md`](copilot-prompt.md) once, then paste tickets. Less exact: the AI judges every rule, including the ones the other versions check with code.
+**3. Microsoft 365 Copilot or ChatGPT at work.** Build a SliceCheck agent once, with no install and no IT ticket for a personal agent (your company's settings decide what's available). After that, open the agent and paste tickets. It runs the same checks and verifies itself using the built-in code tool, and tickets stay inside the AI your company already approved.
+- Copilot (Agent Builder): [`kits/copilot/SETUP.md`](kits/copilot/SETUP.md)
+- ChatGPT (Custom GPT): [`kits/chatgpt/SETUP.md`](kits/chatgpt/SETUP.md)
+
+**4. No setup at all.** Paste [`copilot-prompt.md`](copilot-prompt.md) into any AI once, then paste tickets. Less exact: the AI judges every rule itself.
+
+The engine ships in JavaScript and Python. The Python version gives identical results and needs nothing installed, which is how it runs inside ChatGPT, Copilot and Claude.ai.
 
 Prefer the command line?
 
