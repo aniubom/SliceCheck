@@ -4,7 +4,7 @@
   "description": "Ticket peer review, minus the noise.",
   "type": "module",
   "bin": { "slicecheck": "bin/slicecheck.mjs" },
-  "scripts": { "test": "node --test test/" },
+  "scripts": { "test": "node --test test/*.test.js" },
   "dependencies": { "js-yaml": "^4.1.0" },
   "license": "MIT"
 }

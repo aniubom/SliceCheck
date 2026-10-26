@@ -1,0 +1,53 @@
+# Expected results for each sample ticket.
+# code: findings the check script must produce (tested automatically).
+# ai:   findings a good AI review should add (for the demo; not auto-tested,
+#       since the test runs without an AI).
+# verdict: the correct final line.
+
+01-clean-jira.md:
+  stage: refinement
+  code: []
+  ai: []
+  verdict: clear
+
+02-wrike-in-dev.txt:
+  stage: in_progress
+  code: [HU-01, HU-02, HU-03, HU-04]
+  ai: []
+  verdict: clear
+
+03-missing-problem-plain.txt:
+  stage: ready
+  code: [MF-01]
+  ai: []
+  verdict: blocked
+
+04-missing-ac-jira.md:
+  stage: ready
+  code: [MF-04]
+  ai: []
+  verdict: blocked
+
+05-refinement-placeholders-wrike.txt:
+  stage: refinement
+  code: []          # empty assignee and placeholder dates are on the Ignore list
+  ai: []
+  verdict: clear
+
+06-vague-problem-plain.txt:
+  stage: ready
+  code: []
+  ai: [MF-02]       # "The report needs to be better."
+  verdict: blocked
+
+07-untestable-ac-typos-jira.md:
+  stage: ready
+  code: []
+  ai: [MF-05, MF-06] # "user friendly", "fast and intutive"; "maintanence"
+  verdict: blocked
+
+08-dependency-no-owner-plain.txt:
+  stage: ready
+  code: []
+  ai: [HU-05]       # payment processor change, no owner or date
+  verdict: clear

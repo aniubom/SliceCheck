@@ -1,0 +1,12 @@
+Status: Ready for Sprint
+Story Points: 3
+Assignee: P. Okafor
+
+Problem Statement:
+The report needs to be better.
+
+User Story:
+As an operations lead, I want an improved occupancy report so that it is better.
+
+Acceptance Criteria:
+AC-1: Given the occupancy report, when it is opened, then it shows occupancy by property and week.

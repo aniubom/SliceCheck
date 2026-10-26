@@ -1,0 +1,19 @@
+Seasonal Rate Import
+Ready for Refinement (DoR)
+Story Points
+
+5
+Assignee
+
+Empty
+Problem Statement
+Revenue analysts paste seasonal rates into 30 property records by hand each quarter. Mistakes go unnoticed until a guest is overcharged.
+User Story
+As a revenue analyst I want to import seasonal rates from one spreadsheet so that all properties update together.
+Acceptance Criteria
+AC-1: Given a valid rate file, when it is imported, then every listed property shows the new rates.
+AC-2: Given a row has an unknown property code, when it is imported, then that row is skipped and listed in an error report.
+Timeline
+Ready for Test [date]
+Ready for Prod [date]
+Peer Review Completed mm/dd/yy

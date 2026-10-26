@@ -1,0 +1,10 @@
+Status: Ready for Sprint
+Story Points: 2
+Assignee: J. Rivera
+
+User Story:
+As a guest, I want to download my stay receipt as a PDF so that I can file expenses.
+
+Acceptance Criteria:
+AC-1: Given a completed stay, when the guest opens their booking, then a "Download receipt" button is shown.
+AC-2: Given the guest clicks "Download receipt", when the file is generated, then it includes dates, nightly rate, taxes and total.

@@ -1,0 +1,36 @@
+Lock Editing on Development Projects
+In Dev
+Story Points
+
+Empty
+Process Area
+
+Projects
+Assignee
+
+Empty
+Problem Statement
+Describe the problem from the perspective of the user.
+
+A site manager changed the budget and status of a development project (a giant lawn chair) without finance sign-off. Anyone can edit these projects today.
+User Story
+As a (role name)/I want/So that ...
+As a finance admin I want edit access to development projects limited to finance roles so that budgets and statuses are protected.
+Acceptance Criteria
+Given/When/Then ... should include impacted screens and fields
+AC-2: Only finance and finance approver roles can edit development projects.
+AC-3: Users without these roles can view development projects but cannot edit any field.
+Process Flow
+If applicable, provide a link containing a workflow.
+NA
+Notes:
+This should mirror the existing project setup for coding purposes
+No budget change request is needed for this change
+Confirm there are no middleware integration issues before release
+Notes:
+This should mirror the existing project setup for coding purposes
+No budget change request is needed for this change
+Confirm there are no middleware integration issues before release
+Organizational Readiness Message - Field Team
+Summarize change in 1-2 sentences to be shared with the field.
+Only finance roles can now edit development projects.

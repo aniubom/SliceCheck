@@ -108,6 +108,8 @@ sections:
     aliases: ["vendor estimate", "vendor", "estimate received from vendor"]
   tech_review_date:
     aliases: ["technical design review", "tech lead review", "requirements review with tech leads"]
+  notes:
+    aliases: ["notes", "ba notes", "refinement notes", "additional notes"]
   permissions:
     aliases: ["permissions access", "permissions", "roles and permissions"]
   dates:

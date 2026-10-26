@@ -1,0 +1,16 @@
+Status: Ready for Sprint
+Story Points: 8
+Assignee: L. Haddad
+
+Problem Statement:
+Residents pay rent through a portal that doesn't show late fees until after they pay, which causes disputes and refund requests every month.
+
+User Story:
+As a resident, I want to see any late fee before I submit my payment, so that I pay the right amount the first time.
+
+Acceptance Criteria:
+AC-1: Given a late fee applies, when the resident opens the payment page, then the fee and new total are shown before the Pay button.
+AC-2: Given no late fee applies, when the resident opens the payment page, then no fee line is shown.
+
+Dependencies:
+Needs a change to the payment processor integration.
