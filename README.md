@@ -28,16 +28,24 @@ It reads [`START-HERE.md`](START-HERE.md), runs SliceCheck's checks in its own c
 
 ## Why it exists
 
-I built the first version for my own team's peer reviews. We already had an AI review agent, so I tested both on the same live ticket. Theirs came back with an eight-section report, wrong findings, and advice nobody asked for. Mine came back with no false positives and a verdict you could read in five seconds. A teammate asked for my prompt that week.
+## Why it exists
 
-The difference wasn't a smarter model. It was deciding up front what *doesn't* count as a problem. Noise is what makes people stop trusting a review tool, so in SliceCheck, **Ignore is a first-class bucket**.
+I originally built SliceCheck to help with peer reviews on my own team. 
+
+At the time, we were reviewing tickets manually, and I saw an opportunity to use AI to make the process faster and more consistent.
+
+I put together an AI-powered prompt that checked tickets against a set of review rules and presented the findings in a clean, color-coded widget, with issues grouped by severity and a verdict you could read in 5 seconds.
+
+That experience helped shape SliceCheck. I realized that a good review tool needs to know not only what to flag, but also what to Ignore.
+
+The goal isn't to find something wrong with every ticket. It's to help teams catch what matters without getting buried in unnecessary feedback.
 
 ## How it works
 
 1. **Rules decide everything.** `rules.yaml` lists every rule with an ID (`MF-01`, `HU-03`, `IG-02`), a bucket, and the section it applies to.
 2. **Code checks the mechanical rules.** Empty fields, placeholder dates, AC numbering gaps, copy-paste duplicates: checked by script, the same way every time.
 3. **AI checks the judgment rules.** Is the problem statement clear? Are the ACs testable? Any typos or unclear language?
-4. **Every review gets verified, silently.** Each finding must cite a real rule, nothing on the Ignore list can be flagged, and the verdict has to match the findings. You only hear about verification if something couldn't be verified. Verification checks that the review follows the rules. It doesn't judge whether each AI call is right.
+4. **Every review gets verified.** Each finding must cite a real rule, nothing on the Ignore list can be flagged, and the verdict has to match the findings. You only hear about verification if something couldn't be verified. Verification checks that the review follows the rules. It doesn't judge whether each AI call is right.
 
 The rules travel with every review, so nothing depends on the AI remembering them.
 
