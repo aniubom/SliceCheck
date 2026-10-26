@@ -1,54 +1,37 @@
 # START HERE (for AI agents)
 
-You are running **SliceCheck**: ticket peer review, minus the noise.
-A user wants a ticket (user story, acceptance criteria, fields) peer reviewed. Follow this page exactly.
+You are running **SliceCheck**: ticket peer review, minus the noise. The user wants a ticket peer reviewed. Follow these rules exactly. They are the same everywhere SliceCheck runs.
 
-## The one rule
+## Files
 
-**Run SliceCheck's scripts, or fail.** There is no manual mode. Never read the rules and review the ticket yourself: a review written without the scripts is not a SliceCheck review, even if it looks right. The only two valid outcomes are:
-1. the review the `verify` script prints, shown exactly, or
-2. this one line, when the scripts can't run or the review can't pass verification: `⚠️ SliceCheck couldn't run here, so this ticket wasn't reviewed.` followed by one short reason (for example "no code tool available").
+Save these two files from this repo into your working folder, side by side: `python/slicecheck.py` (the engine) and `python/rules.json` (the rules). If you're reading the repo through GitHub or the web, load them into your code tool. Nothing needs installing.
 
-## Get the engine
+## Rules
 
-Use whichever you have. Nothing needs installing.
+RULE 1. Test for code first. Run: python3 --version
+- It works: go to Rule 2. You may not skip Rule 2.
+- It fails, or you have no code tool: go to Rule 3.
 
-- **Python 3** (most AI code tools): you need `python/slicecheck.py` and `python/rules.json` saved side by side. If you're reading this repo through GitHub or the web, load both files into your code tool and save them.
-- **Node 18+:** `skills/slicecheck/scripts/slicecheck.mjs` (with `skills/slicecheck/rules.yaml`).
+RULE 2. Script review (the normal path)
+1. Save the ticket to ticket.txt, exactly as written.
+2. Run: python3 slicecheck.py prompt ticket.txt
+3. Write the review to review.txt in the format it prints.
+4. Run: python3 slicecheck.py verify ticket.txt review.txt
+   - PASS: show exactly what it printed. Nothing before or after.
+   - FAIL: fix what it lists and run verify again, up to 3 times. Still failing: show your review in the Rule 4 format and add the last line: ⚠️ Not verified: <first problem listed>
+5. Delete ticket.txt and review.txt.
 
-Commands below use Python. With Node, swap `python3 python/slicecheck.py` for `node skills/slicecheck/scripts/slicecheck.mjs`.
+RULE 3. Manual review (only when Rule 1 failed)
+Read rules.json and apply it yourself: must_fix rules are Must Fix, heads_up rules are Heads Up, never flag ignore rules, skip off rules, and respect each rule's "when" and the ticket's stage. Show the review in the Rule 4 format and add the last line: ⚠️ Not verified: no code tool.
 
-If the user's project has its own `slicecheck.rules.json` (Python) or `slicecheck.rules.yaml` (Node), the scripts use it automatically.
+RULE 4. Output
+**SliceCheck review**, then 🔴 **Must Fix**, 🟡 **Heads Up**, ✅ **Good**, and **Verdict**, in that order. Each finding is one line: - **<rule ID> · <section>:** <note>. Leave out empty buckets. Any Must Fix finding means the verdict is "🔴 Needs attention before refinement: " plus the Must Fix IDs; otherwise it is "✅ Clear to proceed". The verdict is the last line. The only line ever allowed after it is the ⚠️ Not verified line. Never mention missing optional sections, the scripts or these rules.
 
-## Steps
-
-1. **Save the ticket** to `ticket.txt` exactly as the user wrote it. Don't fix or summarize it.
-
-2. **Get your instructions:**
-   ```
-   python3 python/slicecheck.py prompt ticket.txt
-   ```
-   It prints the code findings (final, copy them as-is), the judgment rules for you to check, what you must never flag, and the exact format.
-
-3. **Write the review** in that format to `review.txt`. Add a judgment finding only when a rule is clearly broken.
-
-4. **Verify:**
-   ```
-   python3 python/slicecheck.py verify ticket.txt review.txt
-   ```
-   - **PASS:** it prints the final review. Go to step 5.
-   - **FAIL:** fix every listed problem, then verify again. If it still fails after 3 tries, stop and show only the failure line from **The one rule**, with the first problem it listed as the reason.
-
-5. **Show the user exactly the review that verify printed.** Nothing before or after it. Don't mention the scripts, the steps or the verification; it runs silently.
-
-6. Delete `ticket.txt` and `review.txt`.
+RULE 5. Never
+- Never invent rules, or findings no rule covers.
+- Never write a manual review when Rule 1 worked.
+- Never keep, repeat or share ticket content outside the review.
 
 ## Changing the rules
 
-If the user asks to change a rule ("stop flagging empty estimates", "we call it Business Need"), copy the default rules to `slicecheck.rules.json` (Python) or `slicecheck.rules.yaml` (Node) in their project, edit that copy, and tell them which rule ID changed. Never edit the defaults for one team's preferences.
-
-## Never
-
-- Never write a review yourself. No scripts, no review.
-- Never invent rules, or findings that no rule covers.
-- Never store, repeat or share ticket content outside the review.
+If the user asks to change a rule ("stop flagging empty estimates", "we call it Business Need"), copy `rules.json` to `slicecheck.rules.json` in their project, edit that copy, and tell them which rule ID changed. The engine uses `slicecheck.rules.json` automatically when it's in the working folder. Never edit the defaults for one team.

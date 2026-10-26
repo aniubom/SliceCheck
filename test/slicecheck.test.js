@@ -136,3 +136,12 @@ VERDICT
   const py = execFileSync("python3", ["-c", `import sys; sys.path.insert(0,'python'); import slicecheck as s; print(s.render_review(open('/tmp/sc-review.txt',encoding='utf-8').read(), s.load_rules('python/rules.json')))`], { encoding: "utf8" });
   assert.equal(py.trimEnd(), js);
 });
+
+test("every instruction file carries the same rulebook", () => {
+  const files = ["START-HERE.md", "skills/slicecheck/SKILL.md", "kits/chatgpt/instructions.txt", "kits/copilot/instructions.txt"];
+  const norm = (t) => t.slice(t.indexOf("RULE 1."), t.indexOf("RULE 5.") + 200)
+    .replace(/python3? (scripts\/)?slicecheck\.py/g, "CMD").replace(/python3? --version/g, "PY --version")
+    .replace(/(scripts\/)?rules\.json/g, "RULES");
+  const blocks = files.map((f) => norm(fs.readFileSync(f, "utf8")));
+  for (const b of blocks) assert.equal(b, blocks[0]);
+});

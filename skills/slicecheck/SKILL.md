@@ -5,51 +5,34 @@ description: Ticket peer review, minus the noise. Reviews a user story or ticket
 
 # SliceCheck
 
-**Run the scripts, or fail.** There is no manual mode. Never read the rules and review the ticket yourself. The only two valid outcomes are the review `verify` prints, shown exactly, or this one line when the scripts can't run or can't pass: `⚠️ SliceCheck couldn't run here, so this ticket wasn't reviewed.` plus a short reason.
+Follow these rules exactly. Paths are relative to this skill's folder. Nothing to install. If Python isn't available but Node is, use `node scripts/slicecheck.mjs` in place of `python3 scripts/slicecheck.py`.
 
-Paths are relative to this skill's folder. Nothing to install. Use Python 3 or Node, whichever works:
-- Python: `python3 scripts/slicecheck.py` (on Windows: `python` or `py`)
-- Node: `node scripts/slicecheck.mjs`
+## Rules
 
-Commands below use Python; with Node, swap the start of the command.
+RULE 1. Test for code first. Run: python3 --version
+- It works: go to Rule 2. You may not skip Rule 2.
+- It fails, or you have no code tool: go to Rule 3.
 
-## Review a ticket
+RULE 2. Script review (the normal path)
+1. Save the ticket to ticket.txt, exactly as written.
+2. Run: python3 scripts/slicecheck.py prompt ticket.txt
+3. Write the review to review.txt in the format it prints.
+4. Run: python3 scripts/slicecheck.py verify ticket.txt review.txt
+   - PASS: show exactly what it printed. Nothing before or after.
+   - FAIL: fix what it lists and run verify again, up to 3 times. Still failing: show your review in the Rule 4 format and add the last line: ⚠️ Not verified: <first problem listed>
+5. Delete ticket.txt and review.txt.
 
-1. Save the ticket to `ticket.txt` exactly as the user wrote it.
+RULE 3. Manual review (only when Rule 1 failed)
+Read scripts/rules.json and apply it yourself: must_fix rules are Must Fix, heads_up rules are Heads Up, never flag ignore rules, skip off rules, and respect each rule's "when" and the ticket's stage. Show the review in the Rule 4 format and add the last line: ⚠️ Not verified: no code tool.
 
-2. Get your instructions:
-   ```bash
-   python3 scripts/slicecheck.py prompt ticket.txt
-   ```
-   It prints the code findings (final, copy them as-is), the judgment rules for you to check, what you must never flag, and the exact format.
+RULE 4. Output
+**SliceCheck review**, then 🔴 **Must Fix**, 🟡 **Heads Up**, ✅ **Good**, and **Verdict**, in that order. Each finding is one line: - **<rule ID> · <section>:** <note>. Leave out empty buckets. Any Must Fix finding means the verdict is "🔴 Needs attention before refinement: " plus the Must Fix IDs; otherwise it is "✅ Clear to proceed". The verdict is the last line. The only line ever allowed after it is the ⚠️ Not verified line. Never mention missing optional sections, the scripts or these rules.
 
-3. Write the review in that format to `review.txt`. Add a judgment finding only when a rule is clearly broken.
+RULE 5. Never
+- Never invent rules, or findings no rule covers.
+- Never write a manual review when Rule 1 worked.
+- Never keep, repeat or share ticket content outside the review.
 
-4. Verify:
-   ```bash
-   python3 scripts/slicecheck.py verify ticket.txt review.txt
-   ```
-   - **PASS:** it prints the final review.
-   - **FAIL:** fix every listed problem and verify again. After 3 failed tries, stop and show only the failure line, with the first problem it listed as the reason.
+## Changing the rules
 
-5. Show the user **exactly** the review verify printed. Nothing before or after. Don't mention the scripts or the verification; it runs silently.
-
-6. Delete `ticket.txt` and `review.txt`.
-
-## Change the rules
-
-A team's own rules live in their project folder: `slicecheck.rules.json` (Python) or `slicecheck.rules.yaml` (Node). The scripts use it automatically when it's there.
-
-When the user asks for a change ("stop flagging empty estimates", "we call it Business Need", "turn on the approval rule"):
-1. If the team file doesn't exist yet, copy `scripts/rules.json` (Python) or `rules.yaml` (Node) into their project under that name.
-2. Edit it: change a rule's `bucket`, add a section alias under `sections`, add a stage word under `stages`, or switch a `team_pack` rule from `off` to a bucket.
-3. Run `prompt` on any ticket to make sure the file still loads.
-4. Tell the user which rule ID you changed and what it does now.
-
-Never edit the defaults in this folder for one team's preferences.
-
-## Never
-
-- Never write a review yourself. No scripts, no review.
-- Never invent rules, or findings that no rule covers.
-- Never store, repeat or share ticket content outside the review.
+If the user asks to change a rule ("stop flagging empty estimates", "we call it Business Need", "turn on the approval rule"), copy `scripts/rules.json` to `slicecheck.rules.json` in their project (with Node: copy `rules.yaml` to `slicecheck.rules.yaml`), edit that copy, and tell them which rule ID changed. The scripts use the team file automatically. Never edit the defaults in this folder for one team.

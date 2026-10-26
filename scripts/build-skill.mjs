@@ -30,4 +30,16 @@ fs.copyFileSync("python/slicecheck.py", "kits/chatgpt/slicecheck.py");
 fs.copyFileSync("python/rules.json", "kits/chatgpt/rules.json");
 fs.copyFileSync("python/slicecheck.py", "kits/copilot/slicecheck.py.txt"); // Copilot knowledge accepts .txt
 fs.copyFileSync("python/rules.json", "kits/copilot/rules.json.txt");
-console.log("Built skills/slicecheck, python/rules.json and kits/");
+// One rulebook, generated into every instruction file so they can never disagree.
+const block = fs.readFileSync("scripts/templates/rules-block.md", "utf8").trim();
+const fill = (tpl, v) =>
+  tpl.replace("{BLOCK}", block).replace(/\{(PY|CMD|RULES|FILES)\}/g, (_, k) => v[k]);
+const tpl = (f) => fs.readFileSync(`scripts/templates/${f}`, "utf8");
+fs.writeFileSync("START-HERE.md", fill(tpl("START-HERE.md"), { PY: "python3", CMD: "python3 slicecheck.py", RULES: "rules.json" }));
+fs.writeFileSync(`${out}/SKILL.md`, fill(tpl("SKILL.md"), { PY: "python3", CMD: "python3 scripts/slicecheck.py", RULES: "scripts/rules.json" }));
+const kit = { PY: "python", CMD: "python slicecheck.py", RULES: "rules.json" };
+fs.writeFileSync("kits/chatgpt/instructions.txt", fill(tpl("kit-instructions.txt"), { ...kit,
+  FILES: "- slicecheck.py: the SliceCheck engine (Python, standard library only).\n- rules.json: the review rules. They decide everything." }));
+fs.writeFileSync("kits/copilot/instructions.txt", fill(tpl("kit-instructions.txt"), { ...kit,
+  FILES: "- slicecheck.py.txt and rules.json.txt. Before Rule 1, save copies named slicecheck.py and rules.json in your working folder." }));
+console.log("Built skills/slicecheck, python/rules.json, kits/ and START-HERE.md");
