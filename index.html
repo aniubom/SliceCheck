@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SliceCheck</title>
+<meta name="description" content="Ticket peer review, minus the noise.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+<style>
+  :root {
+    --bg: #ffffff; --surface: #ffffff; --muted-surface: #f5f3ee; --border: #e3e0d8;
+    --text: #1d1d1f; --muted: #6b6b70; --accent: #1d1d1f; --accent-text: #ffffff;
+    --red: #c2410c; --green: #15803d; --chip: #f1eee6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #161616; --surface: #1e1e1e; --muted-surface: #24231f; --border: #34322d;
+      --text: #ededed; --muted: #a3a3a3; --accent: #ededed; --accent-text: #161616;
+      --red: #fb923c; --green: #4ade80; --chip: #2a2924;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #161616; --surface: #1e1e1e; --muted-surface: #24231f; --border: #34322d;
+    --text: #ededed; --muted: #a3a3a3; --accent: #ededed; --accent-text: #161616;
+    --red: #fb923c; --green: #4ade80; --chip: #2a2924;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 Inter, system-ui, sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 32px 16px 64px; }
+  header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+  h1 { margin: 0; font-size: 22px; font-weight: 600; }
+  .sub { margin: 2px 0 0; color: var(--muted); }
+  .chip { border: 1px solid var(--border); background: var(--chip); color: var(--text); border-radius: 10px; padding: 8px 12px; font: inherit; font-size: 14px; cursor: pointer; min-height: 40px; }
+  label.h { display: block; font-weight: 500; margin: 24px 0 8px; }
+  textarea { width: 100%; min-height: 220px; resize: vertical; border: 1px solid var(--border); border-radius: 12px; padding: 14px; font: 14px/1.5 Inter, system-ui, sans-serif; background: var(--surface); color: var(--text); }
+  textarea.short { min-height: 140px; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+  button { font: inherit; cursor: pointer; }
+  .btn { border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: 10px; padding: 10px 16px; min-height: 44px; font-weight: 500; }
+  .btn.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+  .legend { margin-top: 20px; background: var(--muted-surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; font-size: 14px; }
+  .legend div { margin: 2px 0; }
+  .panel { margin-top: 20px; border: 1px solid var(--border); border-radius: 12px; padding: 16px; background: var(--surface); }
+  .panel h2 { margin: 0 0 8px; font-size: 16px; }
+  .finding { padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+  .finding:last-child { border-bottom: 0; }
+  .muted { color: var(--muted); font-size: 14px; }
+  .ok { color: var(--green); font-weight: 600; }
+  .bad { color: var(--red); font-weight: 600; }
+  .hidden { display: none; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  td, th { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 500; }
+  select, input[type=text] { font: inherit; font-size: 14px; border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; background: var(--surface); color: var(--text); min-height: 36px; width: 100%; }
+  .tag { display: inline-block; font-size: 12px; border-radius: 6px; padding: 1px 6px; background: var(--chip); color: var(--muted); }
+  .tablewrap { overflow-x: auto; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 600px) { .grid2 { grid-template-columns: 1fr; } }
+  footer { margin-top: 40px; color: var(--muted); font-size: 13px; }
+  footer a { color: inherit; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>SliceCheck</h1>
+      <p class="sub">Paste a ticket, hit run. Ticket peer review, minus the noise.</p>
+    </div>
+    <button class="chip" id="settingsBtn" aria-label="Open rules settings">⚙ Rules · <span id="rulesName">default</span></button>
+  </header>
+
+  <!-- Review view -->
+  <section id="reviewView">
+    <label class="h" for="ticket">Ticket content</label>
+    <textarea id="ticket" placeholder="Paste your full ticket here: user story, AC, notes, custom fields, approval status, etc."></textarea>
+    <div class="row">
+      <button class="btn primary" id="runBtn">▷ Run peer review</button>
+      <button class="btn" id="clearBtn">↻ Clear</button>
+    </div>
+
+    <div class="legend">
+      <div>🔴 <b>Must Fix</b> · blocks the ticket from moving forward</div>
+      <div>🟡 <b>Heads Up</b> · worth a look, never a blocker</div>
+      <div>✅ <b>Good</b> · section looks complete</div>
+      <div class="muted">Your ticket never leaves this page. SliceCheck builds the prompt; you paste it into Copilot, ChatGPT or Claude.</div>
+    </div>
+
+    <div class="panel hidden" id="resultPanel" aria-live="polite">
+      <h2>Code checks</h2>
+      <div id="codeFindings"></div>
+      <p class="muted" id="promptNote"></p>
+      <div class="row"><button class="btn" id="copyAgain">Copy prompt again</button></div>
+
+      <label class="h" for="review">Paste the AI's review here to verify it</label>
+      <textarea class="short" id="review" placeholder="FINDINGS ... GOOD ... VERDICT ..."></textarea>
+      <div class="row"><button class="btn primary" id="verifyBtn">Verify review</button></div>
+      <div id="verifyOut"></div>
+    </div>
+  </section>
+
+  <!-- Settings view -->
+  <section id="settingsView" class="hidden">
+    <div class="row">
+      <button class="btn" id="backBtn">← Back to review</button>
+      <button class="btn" id="exportBtn">Export rules.yaml</button>
+      <label class="btn" for="importFile" style="display:inline-flex;align-items:center">Import rules.yaml</label>
+      <input type="file" id="importFile" accept=".yaml,.yml" class="hidden">
+      <button class="btn" id="resetBtn">Reset to defaults</button>
+    </div>
+
+    <div class="panel">
+      <h2>Rules</h2>
+      <p class="muted">Pick a bucket for each rule. <span class="tag">code</span> rules are checked by script, the same way every time. <span class="tag">ai</span> rules need judgment.</p>
+      <div class="tablewrap"><table id="rulesTable"></table></div>
+    </div>
+
+    <div class="panel">
+      <h2>Add a rule</h2>
+      <div class="grid2">
+        <div><label class="muted" for="newMsg">What to flag</label><input type="text" id="newMsg" placeholder="Security review field is empty"></div>
+        <div><label class="muted" for="newSection">Section</label><select id="newSection"></select></div>
+        <div><label class="muted" for="newCheck">Check</label>
+          <select id="newCheck">
+            <option value="not_empty">Is empty (code)</option>
+            <option value="present">Is missing (code)</option>
+            <option value="not_placeholder">Still a placeholder (code)</option>
+            <option value="not_na">Marked N/A (code)</option>
+            <option value="sequential">Numbering skips (code)</option>
+            <option value="ai">Needs judgment (ai)</option>
+          </select></div>
+        <div><label class="muted" for="newBucket">Bucket</label>
+          <select id="newBucket"><option value="must_fix">Must Fix</option><option value="heads_up">Heads Up</option><option value="ignore">Ignore</option></select></div>
+      </div>
+      <div class="row"><button class="btn primary" id="addRuleBtn">+ Add rule</button></div>
+    </div>
+
+    <div class="panel">
+      <h2>Section names</h2>
+      <p class="muted">Add your team's wording, separated by commas. "Business Need" can mean Problem Statement.</p>
+      <div class="tablewrap"><table id="sectionsTable"></table></div>
+    </div>
+
+    <div class="panel">
+      <h2>Stages</h2>
+      <p class="muted">Status words for each stage. Some rules change with the stage.</p>
+      <div class="tablewrap"><table id="stagesTable"></table></div>
+    </div>
+  </section>
+
+  <footer>Built by Ani Ubom · <a href="https://github.com/aniubom/SliceCheck">SliceCheck on GitHub</a></footer>
+</main>
+
+<script type="module">
+import { parseTicket } from "./src/parse.js";
+import { checkTicket } from "./src/check.js";
+import { buildPrompt } from "./src/prompt.js";
+import { verifyReview } from "./src/verify.js";
+
+const KEY = "slicecheck.rules.v1";
+const $ = (id) => document.getElementById(id);
+let defaults, rules, lastResult, lastPrompt;
+
+const store = {
+  get() { try { return localStorage.getItem(KEY); } catch { return null; } },
+  set(v) { try { localStorage.setItem(KEY, v); } catch {} },
+  clear() { try { localStorage.removeItem(KEY); } catch {} },
+};
+const save = () => store.set(jsyaml.dump(rules, { lineWidth: 120 }));
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const label = (n) => n.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase());
+
+async function load() {
+  const text = await fetch("./rules.yaml").then((r) => r.text());
+  defaults = jsyaml.load(text);
+  const saved = store.get();
+  rules = saved ? jsyaml.load(saved) : structuredClone(defaults);
+  $("rulesName").textContent = saved ? "custom" : "default";
+}
+
+// ---------- Review ----------
+async function copy(text) {
+  try { await navigator.clipboard.writeText(text); return true; } catch { return false; }
+}
+
+$("runBtn").onclick = async () => {
+  const ticket = $("ticket").value;
+  if (!ticket.trim()) { $("ticket").focus(); return; }
+  lastResult = checkTicket(parseTicket(ticket, rules), rules);
+  lastPrompt = buildPrompt(ticket, lastResult, rules);
+  const L = rules.output.labels;
+  const f = lastResult.findings;
+  $("codeFindings").innerHTML =
+    `<p class="muted">Stage: ${esc(label(lastResult.stage))}${lastResult.notFound.length ? " · Not found: " + esc(lastResult.notFound.map(label).join(", ")) : ""}</p>` +
+    (f.length
+      ? f.map((x) => `<div class="finding">${L[x.bucket]} · <b>${x.id}</b> · ${esc(x.section)}: ${esc(x.message)} <span class="muted">(${esc(x.detail)})</span></div>`).join("")
+      : `<div class="finding">No code findings.</div>`);
+  const ok = await copy(lastPrompt);
+  $("promptNote").textContent = ok
+    ? "Prompt copied. Paste it into Copilot, ChatGPT or Claude, then paste the answer below to verify it."
+    : "Couldn't copy automatically. Use the button below.";
+  $("verifyOut").innerHTML = "";
+  $("resultPanel").classList.remove("hidden");
+};
+
+$("copyAgain").onclick = async () => {
+  if (!lastPrompt) return;
+  const ok = await copy(lastPrompt);
+  if (!ok) { $("review").value = lastPrompt; $("review").select(); }
+  $("promptNote").textContent = ok ? "Prompt copied." : "Copy blocked by the browser. The prompt is in the box below; copy it from there.";
+};
+
+$("clearBtn").onclick = () => {
+  $("ticket").value = ""; $("review").value = "";
+  $("resultPanel").classList.add("hidden");
+};
+
+$("verifyBtn").onclick = () => {
+  if (!lastResult) return;
+  const res = verifyReview($("review").value, lastResult, rules);
+  $("verifyOut").innerHTML = res.passed
+    ? `<p class="ok">✓ Review passed. It follows your rules.</p>`
+    : `<p class="bad">✗ Review breaks your rules. Ask the AI to fix these:</p>` +
+      res.problems.map((p) => `<div class="finding">${esc(p)}</div>`).join("");
+};
+
+// ---------- Settings ----------
+const BUCKETS = ["must_fix", "heads_up", "ignore", "off"];
+const BUCKET_NAMES = { must_fix: "Must Fix", heads_up: "Heads Up", ignore: "Ignore", off: "Off" };
+
+function allRules() { return [...rules.rules, ...(rules.team_pack?.rules || [])]; }
+
+function renderSettings() {
+  const rows = allRules().map((r) => {
+    const team = rules.team_pack?.rules.includes(r);
+    const opts = BUCKETS.map((b) => `<option value="${b}" ${r.bucket === b ? "selected" : ""}>${BUCKET_NAMES[b]}</option>`).join("");
+    return `<tr><td><b>${r.id}</b>${team ? ' <span class="tag">team pack</span>' : ""}</td>
+      <td>${esc(r.message)} <span class="tag">${r.by || "ignore"}</span></td>
+      <td style="min-width:130px"><select data-rule="${r.id}" aria-label="Bucket for ${r.id}">${opts}</select></td></tr>`;
+  }).join("");
+  $("rulesTable").innerHTML = `<tr><th>ID</th><th>Rule</th><th>Bucket</th></tr>${rows}`;
+  $("rulesTable").querySelectorAll("select").forEach((s) => (s.onchange = () => {
+    allRules().find((r) => r.id === s.dataset.rule).bucket = s.value; changed();
+  }));
+
+  $("sectionsTable").innerHTML = `<tr><th>Section</th><th>Names it goes by</th></tr>` +
+    Object.entries(rules.sections).map(([n, d]) =>
+      `<tr><td>${label(n)}</td><td><input type="text" data-section="${n}" aria-label="Names for ${label(n)}" value="${esc(d.aliases.join(", "))}"></td></tr>`).join("");
+  $("sectionsTable").querySelectorAll("input").forEach((i) => (i.onchange = () => {
+    rules.sections[i.dataset.section].aliases = i.value.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean); changed();
+  }));
+
+  $("stagesTable").innerHTML = `<tr><th>Stage</th><th>Status words</th></tr>` +
+    Object.entries(rules.stages).map(([n, w]) =>
+      `<tr><td>${label(n)}</td><td><input type="text" data-stage="${n}" aria-label="Status words for ${label(n)}" value="${esc(w.join(", "))}"></td></tr>`).join("");
+  $("stagesTable").querySelectorAll("input").forEach((i) => (i.onchange = () => {
+    rules.stages[i.dataset.stage] = i.value.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean); changed();
+  }));
+
+  $("newSection").innerHTML = Object.keys(rules.sections).map((n) => `<option value="${n}">${label(n)}</option>`).join("");
+}
+
+function changed() { save(); $("rulesName").textContent = "custom"; }
+
+$("addRuleBtn").onclick = () => {
+  const msg = $("newMsg").value.trim();
+  if (!msg) { $("newMsg").focus(); return; }
+  const n = rules.rules.filter((r) => r.id.startsWith("CU-")).length + 1;
+  const check = $("newCheck").value;
+  const rule = { id: `CU-${String(n).padStart(2, "0")}`, bucket: $("newBucket").value, section: $("newSection").value, message: msg };
+  if (check === "ai") rule.by = "ai"; else { rule.by = "code"; rule.check = check; }
+  rules.rules.push(rule);
+  $("newMsg").value = "";
+  changed(); renderSettings();
+};
+
+$("exportBtn").onclick = () => {
+  const blob = new Blob([jsyaml.dump(rules, { lineWidth: 120 })], { type: "text/yaml" });
+  const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: "rules.yaml" });
+  a.click(); URL.revokeObjectURL(a.href);
+};
+
+$("importFile").onchange = async (e) => {
+  const file = e.target.files[0]; if (!file) return;
+  try {
+    const parsed = jsyaml.load(await file.text());
+    if (!parsed?.rules || !parsed?.sections || !parsed?.output) throw new Error("missing rules, sections or output");
+    rules = parsed; changed(); renderSettings();
+  } catch (err) { alert("That file isn't a valid SliceCheck rules.yaml: " + err.message); }
+  e.target.value = "";
+};
+
+$("resetBtn").onclick = () => {
+  rules = structuredClone(defaults); store.clear(); $("rulesName").textContent = "default"; renderSettings();
+};
+
+$("settingsBtn").onclick = () => { renderSettings(); $("reviewView").classList.add("hidden"); $("settingsView").classList.remove("hidden"); };
+$("backBtn").onclick = () => { $("settingsView").classList.add("hidden"); $("reviewView").classList.remove("hidden"); };
+
+load();
+</script>
+</body>
+</html>
