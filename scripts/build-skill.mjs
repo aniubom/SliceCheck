@@ -25,4 +25,9 @@ fs.writeFileSync("python/rules.json", JSON.stringify(yaml.load(fs.readFileSync("
 // Same engine in Python, for environments without Node.
 fs.copyFileSync("python/slicecheck.py", `${out}/scripts/slicecheck.py`);
 fs.copyFileSync("python/rules.json", `${out}/scripts/rules.json`);
-console.log("Built skills/slicecheck");
+// Ready-to-upload kits for ChatGPT (Custom GPT) and Microsoft 365 Copilot (Agent Builder).
+fs.copyFileSync("python/slicecheck.py", "kits/chatgpt/slicecheck.py");
+fs.copyFileSync("python/rules.json", "kits/chatgpt/rules.json");
+fs.copyFileSync("python/slicecheck.py", "kits/copilot/slicecheck.py.txt"); // Copilot knowledge accepts .txt
+fs.copyFileSync("python/rules.json", "kits/copilot/rules.json.txt");
+console.log("Built skills/slicecheck, python/rules.json and kits/");

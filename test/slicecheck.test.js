@@ -106,3 +106,15 @@ test("Python verify agrees with JavaScript verify", async () => {
   catch (e) { code = e.status; }
   assert.equal(code, 2);
 });
+
+test("ChatGPT and Copilot kits carry the current engine and rules", () => {
+  const eng = fs.readFileSync("python/slicecheck.py", "utf8");
+  const rj = fs.readFileSync("python/rules.json", "utf8");
+  assert.equal(fs.readFileSync("kits/chatgpt/slicecheck.py", "utf8"), eng);
+  assert.equal(fs.readFileSync("kits/chatgpt/rules.json", "utf8"), rj);
+  assert.equal(fs.readFileSync("kits/copilot/slicecheck.py.txt", "utf8"), eng);
+  assert.equal(fs.readFileSync("kits/copilot/rules.json.txt", "utf8"), rj);
+  for (const k of ["chatgpt", "copilot"]) {
+    assert.ok(fs.readFileSync(`kits/${k}/instructions.txt`, "utf8").length <= 8000, `${k} instructions over 8,000 characters`);
+  }
+});
