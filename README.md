@@ -4,7 +4,20 @@
 
 AI peer review for requirements: user stories and acceptance criteria, sorted into **Must Fix**, **Heads Up**, and **Ignore**.
 
-![SliceCheck reviewing a ticket](docs/screenshot-review.png)
+Paste a ticket into your AI and say **"peer review this."** You get back one clean review:
+
+> **SliceCheck review**
+>
+> 🔴 **Must Fix**
+> - **MF-05 · Acceptance criteria:** "should be user friendly" has no pass/fail outcome.
+> - **MF-06 · User story:** typo, "maintanence".
+>
+> 🟡 **Heads Up**
+> - **HU-03 · Acceptance criteria:** numbering starts at AC-2.
+>
+> ✅ **Good:** Problem statement, Estimate, Assignee
+>
+> **Verdict:** 🔴 Needs attention before refinement: MF-05, MF-06
 
 ## Why it exists
 
@@ -21,29 +34,31 @@ The difference wasn't a smarter model. It was deciding up front what *doesn't* c
 
 The rules travel with every review, so nothing depends on the AI remembering them.
 
-## Three ways to use it
+## Use it inside your AI
 
-**1. Web tool (no install).** Paste a ticket, hit **Run peer review**. SliceCheck runs the code checks and copies a review prompt. Paste it into Copilot, ChatGPT or Claude, then paste the answer back to verify it. Your ticket never leaves the page: no server, no login, no API key.
+SliceCheck runs inside the AI you already use. No copy-paste, no extra tab. The AI runs the checks, writes the review, verifies it, and fixes it before you see it.
 
-**2. Copilot or ChatGPT only.** Paste [`copilot-prompt.md`](copilot-prompt.md) once, then paste tickets. Less exact (the AI judges every rule), but it works anywhere.
+**1. As a skill (Claude, Codex, GitHub Copilot, Cursor, Gemini CLI and other tools that support SKILL.md).** Copy the [`skills/slicecheck`](skills/slicecheck/SKILL.md) folder into your tool's skills folder (for Claude Code: `~/.claude/skills/`). It's self-contained: one script, the rules, the instructions. Needs Node 18+, nothing to install.
 
-**3. Claude Code or another agent.** Clone the repo, run `npm install`, and point your agent at [`START-HERE.md`](START-HERE.md). Claude users can also install the skill in [`skills/slicecheck`](skills/slicecheck/SKILL.md).
+**2. As an MCP server (Claude Desktop, Claude Code, VS Code Copilot, Cursor).** Adds `check_ticket`, `verify_review` and `get_rules` as tools in your chat. Runs on your machine, so tickets never leave it. Setup: [`mcp/README.md`](mcp/README.md).
+
+**3. Copilot or ChatGPT with no setup.** Paste [`copilot-prompt.md`](copilot-prompt.md) once, then paste tickets. Less exact: the AI judges every rule, including the ones the other versions check with code.
+
+Prefer the command line?
 
 ```bash
 node bin/slicecheck.mjs check  ticket.txt              # code findings
-node bin/slicecheck.mjs prompt ticket.txt              # full review prompt
-node bin/slicecheck.mjs verify ticket.txt review.txt   # check an AI review
+node bin/slicecheck.mjs prompt ticket.txt              # full review instructions
+node bin/slicecheck.mjs verify ticket.txt review.txt   # check a review
 ```
 
 ## Make it yours
 
 Your team has its own rules. Add them.
 
-- **In the web tool:** open **⚙ Rules** to change any rule's bucket, add rules, rename sections ("Business Need" = Problem Statement), and set your status words. Export the result as `rules.yaml` and share it with your team.
-- **In the file:** edit `rules.yaml` directly. It's plain text with comments.
+- **Just ask your AI:** "stop flagging empty estimates," "we call it Business Need," "turn on the approval rule." It saves your team's version as `slicecheck.rules.yaml` in your project and leaves the defaults alone.
+- **In the file:** edit `slicecheck.rules.yaml` directly. It's plain text with comments. Commit it so your whole team reviews the same way.
 - **Team pack:** optional rules many teams use (approvals, change messages, process-flow diagrams, vendor estimates) ship turned off. Switch on the ones you need.
-
-![SliceCheck rules settings](docs/screenshot-settings.png)
 
 ## Default rules
 
