@@ -7,7 +7,11 @@ description: Ticket peer review, minus the noise. Reviews a user story or ticket
 
 Peer review a ticket against `rules.yaml`. Scripts check the mechanical rules and verify your review, so the result is the same every time. Paths below are relative to this skill's folder.
 
-Needs Node 18 or newer. No install step.
+No install step. Use Node if it's available (`node --version`); otherwise use Python 3, which runs the same engine:
+- Node: `node scripts/slicecheck.mjs <command> ...`
+- Python: `python3 scripts/slicecheck.py <command> ... --rules scripts/rules.json` (on Windows, `python` or `py`)
+
+The commands below show Node. With Python, swap the start of the command; everything else is identical.
 
 ## Review a ticket
 
@@ -69,11 +73,13 @@ When the user asks for a change ("stop flagging empty estimates", "we call it Bu
 3. Run the check on any ticket to make sure the file still loads.
 4. Tell the user which rule ID you changed and what it does now.
 
+When running with Python, the team file is `slicecheck.rules.json` instead (same content, JSON format). Create it with `python3 scripts/slicecheck.py` reading `scripts/rules.json` as the starting copy.
+
 Never edit the default `rules.yaml` in this folder for one team's preferences.
 
 ## If you can't run scripts
 
-Some environments can't run code. Then read `rules.yaml`, apply every rule yourself, and use the same output. Add one line at the end: *"Reviewed without SliceCheck's scripts, so this review wasn't verified."*
+Some environments can't run code at all. Then read `rules.yaml`, apply every rule yourself, and use the same output. Add one line at the end: *"Reviewed without SliceCheck's scripts, so this review wasn't verified."*
 
 ## Never
 

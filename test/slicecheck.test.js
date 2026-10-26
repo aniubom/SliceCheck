@@ -81,3 +81,28 @@ test("skill folder is self-contained and in sync", async () => {
   const out = execFileSync("node", ["skills/slicecheck/scripts/slicecheck.mjs", "check", "examples/04-missing-ac-jira.md"], { encoding: "utf8" });
   assert.ok(out.includes("MF-04"));
 });
+
+test("Python engine matches the JavaScript engine on every sample", async () => {
+  const { execFileSync } = await import("node:child_process");
+  assert.deepEqual(JSON.parse(fs.readFileSync("python/rules.json", "utf8")), rules,
+    "python/rules.json is out of date: run npm run build:skill");
+  for (const file of Object.keys(expected)) {
+    const text = read(file);
+    const py = JSON.parse(execFileSync("python3", ["python/slicecheck.py", "check", `examples/${file}`, "--json"], { encoding: "utf8" }));
+    const js = run(text);
+    assert.equal(py.stage, js.stage, file);
+    assert.deepEqual(py.findings, js.findings, file);
+    assert.deepEqual(py.notFound, js.notFound, file);
+    const pyPrompt = execFileSync("python3", ["python/slicecheck.py", "prompt", `examples/${file}`], { encoding: "utf8" });
+    assert.equal(pyPrompt.trimEnd(), buildPrompt(text, js, rules), `${file}: prompt differs`);
+  }
+});
+
+test("Python verify agrees with JavaScript verify", async () => {
+  const { execFileSync } = await import("node:child_process");
+  fs.writeFileSync("/tmp/sc-bad-review.txt", "FINDINGS\n🟡 Heads Up | IG-04 | Assignee | Empty.\nGOOD\n✅ Good | x\nVERDICT\n✅ Clear to proceed\n");
+  let code = 0;
+  try { execFileSync("python3", ["python/slicecheck.py", "verify", "examples/02-wrike-in-dev.txt", "/tmp/sc-bad-review.txt"], { encoding: "utf8" }); }
+  catch (e) { code = e.status; }
+  assert.equal(code, 2);
+});
