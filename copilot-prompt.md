@@ -45,12 +45,11 @@ OUTPUT FORMAT (use exactly this, nothing before or after; leave out a bucket wit
 🟡 **Heads Up**
 - **<rule ID> · <section>:** <specific note>
 
-✅ **Good:** <sections with no findings>
-
 **Verdict:** <one line>
 
 RULES FOR THE OUTPUT:
 - Every finding cites one rule ID from the lists above, in the right bucket.
+- If there are no findings, show only the Verdict line. Do not list sections that passed.
 - VERDICT LOGIC (follow exactly): if there is at least one 🔴 Must Fix finding, the verdict is "🔴 Needs attention: " followed by the Must Fix rule IDs. Otherwise it is "✅ Clear to proceed".
 - No extra commentary.
 

@@ -130,6 +130,7 @@ VERDICT
 🔴 Needs attention: MF-05`;
   const js = renderReview(review, rules);
   assert.ok(js.startsWith("**SliceCheck review**"));
+  assert.ok(!js.includes("Good") && !js.includes("Problem statement"), "passed sections stay out of the visible review");
   assert.ok(!/\bPASS\b/.test(js) && !/verif/i.test(js), "verification must stay silent in the rendered review");
   const py = runPython(["-c", "import sys; sys.path.insert(0,'python'); import slicecheck as s; print(s.render_review(sys.stdin.read(), s.load_rules('python/rules.json')))"], { input: review });
   assert.equal(py.trimEnd(), js);

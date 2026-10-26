@@ -3367,12 +3367,11 @@ ${L2.must_fix.split(" ")[0]} **${L2.must_fix.split(" ").slice(1).join(" ")}**
 ${L2.heads_up.split(" ")[0]} **${L2.heads_up.split(" ").slice(1).join(" ")}**
 - **<rule ID> \xB7 <section>:** <specific note>
 
-${L2.good.split(" ")[0]} **${L2.good.split(" ").slice(1).join(" ")}:** <sections with no findings>
-
 **Verdict:** <one line>
 
 RULES FOR THE OUTPUT:
 - Every finding cites one rule ID from the lists above, in the right bucket.
+- If there are no findings, show only the Verdict line. Do not list sections that passed.
 - VERDICT LOGIC (follow exactly): if there is at least one ${L2.must_fix} finding, the verdict is "${V.blocked}: " followed by the Must Fix rule IDs. Otherwise it is "${V.clear}".
 - No extra commentary.
 
@@ -3489,14 +3488,11 @@ function renderReview(reviewText, rules2, { warning } = {}) {
   const byId = new Map(activeRules(rules2).all.map((r) => [r.id, r]));
   const bucketOf = (f) => byId.get(f.id)?.bucket;
   const item = (f) => `- **${f.id} \xB7 ${f.section}:** ${f.note || byId.get(f.id)?.message || ""}`.trimEnd();
-  const out = ["**SliceCheck review**", ""];
   const mf = review.findings.filter((f) => bucketOf(f) === "must_fix");
   const hu = review.findings.filter((f) => bucketOf(f) === "heads_up");
+  const out = mf.length || hu.length ? ["**SliceCheck review**", ""] : [];
   if (mf.length) out.push(`${L2.must_fix.split(" ")[0]} **${L2.must_fix.split(" ").slice(1).join(" ")}**`, ...mf.map(item), "");
   if (hu.length) out.push(`${L2.heads_up.split(" ")[0]} **${L2.heads_up.split(" ").slice(1).join(" ")}**`, ...hu.map(item), "");
-  const goodLine = review.goodLine || "";
-  const good = goodLine.split("|").slice(1).join("|").trim();
-  if (good) out.push(`${L2.good.split(" ")[0]} **${L2.good.split(" ").slice(1).join(" ")}:** ${good}`, "");
   out.push(`**Verdict:** ${review.verdictLines[0] || ""}`);
   if (warning) out.push("", `\u26A0\uFE0F ${warning}`);
   return out.join("\n");
