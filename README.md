@@ -16,6 +16,16 @@ Paste a ticket into your AI and say **"peer review this."** You get back one cle
 >
 > **Verdict:** 🔴 Needs attention before refinement: MF-05, MF-06
 
+## Quick start
+
+**Already chatting with an AI that can read GitHub or the web?** Tell it:
+
+> Use github.com/aniubom/SliceCheck to peer review this ticket: *(paste your ticket)*
+
+It reads [`START-HERE.md`](START-HERE.md) and follows SliceCheck's rules. If it can run code, it also runs the checks and verifies its own review.
+
+**Want it every time, without explaining?** Pick the setup for your AI under [Use it inside your AI](#use-it-inside-your-ai).
+
 ## Why it exists
 
 I built the first version for my own team's peer reviews. We already had an AI review agent, so I tested both on the same live ticket. Theirs came back with an eight-section report, wrong findings, and advice nobody asked for. Mine came back with no false positives and a verdict you could read in five seconds. A teammate asked for my prompt that week.
@@ -33,7 +43,7 @@ The rules travel with every review, so nothing depends on the AI remembering the
 
 ## Use it inside your AI
 
-SliceCheck runs inside the AI you already use. No copy-paste, no extra tab. The AI runs the checks, writes the review, verifies it, and fixes it before you see it.
+SliceCheck runs inside the AI you already use. Set it up once, then just paste tickets. The AI runs the checks, writes the review, verifies it, and fixes it before you see it.
 
 **1. As a skill (Claude, Codex, GitHub Copilot, Cursor, Gemini CLI and other tools that support SKILL.md).** Copy the [`skills/slicecheck`](skills/slicecheck/SKILL.md) folder into your tool's skills folder (for Claude Code: `~/.claude/skills/`). It's self-contained: the scripts, the rules, the instructions. Uses Node if you have it, Python if you don't. Nothing to install.
 
@@ -43,11 +53,11 @@ SliceCheck runs inside the AI you already use. No copy-paste, no extra tab. The 
 - Copilot (Agent Builder): [`kits/copilot/SETUP.md`](kits/copilot/SETUP.md)
 - ChatGPT (Custom GPT): [`kits/chatgpt/SETUP.md`](kits/chatgpt/SETUP.md)
 
-**4. No setup at all.** Paste [`copilot-prompt.md`](copilot-prompt.md) into any AI once, then paste tickets. Less exact: the AI judges every rule itself.
+**4. No setup at all.** Paste the prompt in [`copilot-prompt.md`](copilot-prompt.md) into any AI once per chat, then paste tickets. Less exact: the AI judges every rule itself and nothing verifies it.
 
 The engine ships in JavaScript and Python. The Python version gives identical results and needs nothing installed, which is how it runs inside ChatGPT, Copilot and Claude.ai.
 
-Prefer the command line?
+Prefer the command line? Clone the repo and run `npm install` once (or use `python3 python/slicecheck.py` with the same commands, nothing to install):
 
 ```bash
 node bin/slicecheck.mjs check  ticket.txt              # code findings
@@ -59,8 +69,8 @@ node bin/slicecheck.mjs verify ticket.txt review.txt   # check a review
 
 Your team has its own rules. Add them.
 
-- **Just ask your AI:** "stop flagging empty estimates," "we call it Business Need," "turn on the approval rule." It saves your team's version as `slicecheck.rules.yaml` in your project and leaves the defaults alone.
-- **In the file:** edit `slicecheck.rules.yaml` directly. It's plain text with comments. Commit it so your whole team reviews the same way.
+- **Just ask your AI:** "stop flagging empty estimates," "we call it Business Need," "turn on the approval rule." It saves your team's version and leaves the defaults alone.
+- **In the file:** the rules are plain text. With the skill or command line, your team's copy is `slicecheck.rules.yaml` in your project (commit it so everyone reviews the same way). In a Copilot agent or Custom GPT, it's the `rules.json` file you uploaded.
 - **Team pack:** optional rules many teams use (approvals, change messages, process-flow diagrams, vendor estimates) ship turned off. Switch on the ones you need.
 
 ## Default rules
