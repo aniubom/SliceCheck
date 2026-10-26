@@ -22,8 +22,6 @@ jobs:
           TAG="v$(node -p "require('./package.json').version")"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           if gh release view "$TAG" >/dev/null 2>&1; then echo "new=false" >> "$GITHUB_OUTPUT"; else echo "new=true" >> "$GITHUB_OUTPUT"; fi
-      - name: Remove old exports branch
-        run: git push origin --delete exports || true
       - if: steps.v.outputs.new == 'true'
         uses: actions/setup-node@v4
         with:
