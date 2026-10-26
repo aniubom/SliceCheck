@@ -50,6 +50,27 @@ stages:
   in_progress: ["in dev", "in development", "in progress", "in qa", "testing"]
 
 # ---------------------------------------------------------------------------
+# Parsing
+# What counts as "empty" and which template lines to skip when reading a
+# section. Add your own template's instruction text here.
+# ---------------------------------------------------------------------------
+parsing:
+  empty_values: ["", "empty", "tbd", "-", "--", "none", "n/a yet"]
+  na_values: ["n/a", "na", "not applicable", "none required"]
+  placeholder_patterns: ['\[[^\]]*\]', 'mm/dd/yy(yy)?', '<[^>]+>', 'xx/xx', 'tbd']
+  template_lines:
+    - '^describe\b'
+    - '^list (specific|known)\b'
+    - '^if applicable\b'
+    - '^summarize\b'
+    - '^identify\b'
+    - '^if there (are|is)\b'
+    - '^as a \(role name\)'
+    - '^given/when/then'
+    - '^will a pop-up'
+    - '^once all approvers'
+
+# ---------------------------------------------------------------------------
 # Sections
 # Names the reviewer looks for. Add your team's own wording to the aliases.
 # If a section can't be found, the reviewer says so instead of guessing.
@@ -62,15 +83,18 @@ sections:
   acceptance_criteria:
     aliases: ["acceptance criteria", "ac", "criteria", "given/when/then"]
   approval:
-    aliases: ["approval", "approved", "approver", "sign-off", "final decision"]
+    aliases: ["approval", "approval status", "approver", "sign-off", "final decision for task", "a task needs approval"]
   estimate:
+    field: true          # a single value, like Wrike/Jira field lists
     aliases: ["story points", "estimate", "points", "size", "effort"]
   assignee:
+    field: true          # a single value, like Wrike/Jira field lists
     aliases: ["assignee", "assigned to", "owner", "developer"]
   status:
+    field: true          # a single value, like Wrike/Jira field lists
     aliases: ["status", "state", "stage"]
   dependencies:
-    aliases: ["dependencies", "integration impacts", "integrations", "partner touch points", "blocked by"]
+    aliases: ["dependencies", "integration impacts", "integration impacts/partner touch points", "integrations", "partner touch points", "blocked by"]
   user_facing_message:
     aliases: ["release note", "change message", "organizational readiness message", "comms", "announcement"]
   process_flow:
@@ -80,9 +104,12 @@ sections:
   approved_requirements_link:
     aliases: ["approved requirements pdf", "approved version", "signed-off requirements"]
   vendor_estimate:
+    field: true          # a single value, like Wrike/Jira field lists
     aliases: ["vendor estimate", "vendor", "estimate received from vendor"]
   tech_review_date:
     aliases: ["technical design review", "tech lead review", "requirements review with tech leads"]
+  permissions:
+    aliases: ["permissions access", "permissions", "roles and permissions"]
   dates:
     aliases: ["timeline", "ready for test", "ready for prod", "due date", "peer review completed"]
 
