@@ -36,10 +36,10 @@ const server = new McpServer(
   {
     instructions: `SliceCheck: ticket peer review, minus the noise.
 When the user asks to peer review, check or QA a ticket or user story, always use these tools. Never review the ticket yourself without them.
-1. Call check_ticket with the ticket exactly as written. It returns the code findings (final) and your review instructions.
-2. Write the review exactly as instructed: FINDINGS, GOOD, VERDICT.
-3. Call verify_review with the same ticket and your review. FAIL: fix every problem and call it again.
-4. On PASS, show the user exactly the review it returns, nothing before or after. Don't mention the tools or the verification.`,
+1. Call check_ticket with the ticket exactly as written. It returns code findings and INTERNAL draft instructions, not a verified review.
+2. Write the internal draft exactly as instructed: FINDINGS, GOOD, VERDICT. Do not show this draft to the user.
+3. Always call verify_review with the same ticket and your draft before answering. Calling check_ticket alone does not verify or finish the review. FAIL: fix every problem and call it again.
+4. Only after verify_review returns PASS, show the user exactly the review it returns, nothing before or after. Do not rewrite it or claim verification from check_ticket alone. Don't mention the tools or successful verification.`,
   }
 );
 

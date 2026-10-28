@@ -324,7 +324,7 @@ STEP 2. JUDGMENT RULES (check each one against the ticket; report a finding only
 STEP 3. NEVER FLAG THESE (they are expected; mentioning them is an error):
 {ignore}
 
-OUTPUT FORMAT (use exactly this, nothing before or after):
+INTERNAL DRAFT FORMAT (write this for verification; do not show it as the final answer):
 FINDINGS
 <one line per finding: label | rule ID | section | specific note>
 GOOD
@@ -336,7 +336,11 @@ RULES FOR THE OUTPUT:
 - Labels are exactly "{L["must_fix"]}" and "{L["heads_up"]}". Every finding cites one rule ID from the lists above.
 - If there are no findings, write "(none)" under FINDINGS.
 - VERDICT LOGIC (follow exactly): if there is at least one {L["must_fix"]} finding, the verdict line is "{V["blocked"]}: " followed by the Must Fix rule IDs. Otherwise the verdict line is "{V["clear"]}".
-- One verdict line only. No extra commentary.
+- One verdict line only. No extra commentary in the internal draft.
+
+REQUIRED NEXT STEP:
+Submit this internal draft and the same ticket to SliceCheck's verifier (the engine's verify command or the verify_review tool). The prompt command has NOT verified the review. Do not return your draft directly to the user.
+On PASS, return exactly the verifier-rendered review. On FAIL, correct the draft and retry; if verification remains unsuccessful, follow the calling integration's Not verified warning instructions. Never present an unverified draft as a verified result.
 
 TICKET:
 """

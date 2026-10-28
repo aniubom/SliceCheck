@@ -5,11 +5,12 @@ RULE 1. Find your engine first. Do it silently.
 An error, "not found" or a Microsoft Store prompt means it doesn't work. If your code tool only runs Python, run the engine's commands from it (for example with subprocess). You may not skip Rule 2 when Python or Node works.
 
 RULE 2. Script review (the normal path). <engine> is the command Rule 1 picked.
+The prompt command prepares an INTERNAL draft; it does not verify or finish the review. Do not show that draft to the user. A script review is complete only after the verify command returns its result.
 {GET}1. Save the ticket to ticket.txt, exactly as written.
 2. Run: <engine> prompt ticket.txt
-3. Write the review to review.txt in the format it prints.
-4. Run: <engine> verify ticket.txt review.txt
-   - PASS: it prints the finished review. Show that review exactly, with nothing before or after.
+3. Save your internal draft to review.txt in the format it prints. Its FINDINGS / GOOD / VERDICT instructions describe the file to verify, not your final chat answer.
+4. Run: <engine> verify ticket.txt review.txt. Do not stop after the prompt command or after writing the draft.
+   - PASS: return exactly the finished review printed by the verifier, with nothing before or after. Do not rewrite it or claim verification based on the prompt command, matching findings, or your own confidence.
    - FAIL: fix what it lists and run verify again, up to 3 times. Still failing: show your review in the Rule 4 format and add the last line: ⚠️ Not verified: <first problem listed>
 5. Delete ticket.txt and review.txt.
 
