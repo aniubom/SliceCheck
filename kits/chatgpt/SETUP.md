@@ -23,6 +23,8 @@ If the review ends with **"⚠️ Not verified: no code tool."**, SliceCheck use
 
 A **"⚠️ Not verified: <problem>"** warning can also mean verification still failed after the correction attempts. The review has not passed verification; address the reported problem before relying on it.
 
+If a code tool is available but neither runtime works, the warning says **"no working Python or Node runtime"** instead. Missing uploaded files or a command that still fails after a setup correction should produce a setup-error message, without a review or verdict. Those problems should not be described as "no code tool."
+
 When testing the setup, inspect the code execution details: both the engine's `prompt` and `verify` commands must run, and `verify` must return PASS. The expected findings alone do not prove verification happened.
 
 ## Your team's rules

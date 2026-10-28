@@ -5,7 +5,7 @@ import path from "node:path";
 import yaml from "js-yaml";
 import { parseTicket } from "../src/parse.js";
 import { checkTicket } from "../src/check.js";
-import { buildPrompt } from "../src/prompt.js";
+import { buildPrompt, buildStandalonePrompt } from "../src/prompt.js";
 import { verifyReview } from "../src/verify.js";
 import { normalizeNewlines, runPython, withTempDir } from "./helpers/runtime.js";
 
@@ -31,6 +31,30 @@ test("prompt carries code findings, judgment rules and the ignore list", () => {
   const text = read("02-wrike-in-dev.txt");
   const prompt = buildPrompt(text, run(text), rules);
   for (const id of ["HU-01", "HU-04", "MF-02", "IG-01"]) assert.ok(prompt.includes(id), id);
+});
+
+test("custom rule conditions, sections and exceptions reach the reviewer in every prompt", () => {
+  const custom = structuredClone(rules);
+  const vague = custom.rules.find((r) => r.id === "MF-02");
+  vague.when = { stage: "ready" };
+  vague.note = "Do not require a numeric impact; a clear description of the user's pain is sufficient.";
+  const approval = custom.team_pack.rules.find((r) => r.id === "TP-00");
+  approval.bucket = "must_fix";
+  const ticket = read("02-wrike-in-dev.txt");
+  const prompt = buildPrompt(ticket, run(ticket, custom), custom);
+  const standalone = buildStandalonePrompt(custom);
+  for (const text of [prompt, standalone]) {
+    const line = text.split("\n").find((l) => l.startsWith("- MF-02"));
+    assert.ok(line.includes("problem statement"), "custom rule's section was lost");
+    assert.ok(line.includes('"stage":"ready"'), "custom rule's condition was lost");
+    assert.ok(line.includes(vague.note), "custom rule's exception was lost");
+  }
+  assert.ok(standalone.includes(approval.note), "manual review lost the pending-approval exception");
+  withTempDir((dir) => {
+    const file = path.join(dir, "rules.json");
+    fs.writeFileSync(file, JSON.stringify(custom));
+    assert.equal(runPython(["python/slicecheck.py", "prompt", "examples/02-wrike-in-dev.txt", "--rules", file]).trimEnd(), prompt);
+  });
 });
 
 test("team pack rule stays off until a team turns it on", () => {
