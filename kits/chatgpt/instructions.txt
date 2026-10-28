@@ -25,7 +25,7 @@ The prompt command prepares an INTERNAL draft; it does not verify or finish the 
 Only an actual PASS for this ticket, this draft and these rules counts as verification. If any of them changes, rerun the relevant commands. Never simulate tool results or treat confidence, expected findings, or an earlier ticket's PASS as verification.
 
 RULE 3. Manual review (only when Rule 1 found no usable runtime)
-Read rules.json and apply it yourself: must_fix rules are Must Fix, heads_up rules are Heads Up, never flag ignore rules, skip off rules, and respect each rule's "when" and the ticket's stage. Follow Rule 5. Show the review in the Rule 4 format and add: ⚠️ Not verified: no code tool. If a code tool exists but neither runtime works, use instead: ⚠️ Not verified: no working Python or Node runtime.
+Read the team's rules file if configured; otherwise read rules.json. Apply it yourself: must_fix rules are Must Fix, heads_up rules are Heads Up, never flag ignore rules, skip off rules, and respect each rule's "when" and the ticket's stage. Follow Rule 5. Show the review in the Rule 4 format and add: ⚠️ Not verified: no code tool. If a code tool exists but neither runtime works, use instead: ⚠️ Not verified: no working Python or Node runtime.
 If you cannot read the rules, explain which file is unavailable; do not invent a review.
 
 RULE 4. Output
