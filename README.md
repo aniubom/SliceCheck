@@ -2,6 +2,8 @@
 
 **Ticket peer review, minus the noise.**
 
+[Read the story behind SliceCheck on Backlog Sushi](https://backlogsushi.com/2026/10/28/ticket-peer-review-minus-the-noise/)
+
 AI peer review for requirements: user stories and acceptance criteria, sorted into **Must Fix**, **Heads Up**, and **Ignore**.
 
 Paste a ticket into your AI and say **"peer review this."** You get back one clean review (this is [sample ticket 07](examples/07-untestable-ac-typos-jira.md)):
