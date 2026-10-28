@@ -13,13 +13,13 @@
   "kits/chatgpt/instructions.txt": {
     "template": "kit-instructions.txt",
     "PY": "python", "CMD": "python slicecheck.py", "RULES": "rules.json",
-    "NODECMD": "node slicecheck.mjs", "NODEIF": " and slicecheck.mjs is in your files", "GET": "",
+    "NODECMD": "node slicecheck.mjs", "NODEIF": "", "GET": "",
     "FILES": "- slicecheck.py: the SliceCheck engine (Python, standard library only).\n- rules.json: the review rules. They decide everything."
   },
   "kits/copilot/instructions.txt": {
     "template": "kit-instructions.txt",
     "PY": "python", "CMD": "python slicecheck.py", "RULES": "rules.json",
-    "NODECMD": "node slicecheck.mjs", "NODEIF": " and slicecheck.mjs is in your files", "GET": "",
+    "NODECMD": "node slicecheck.mjs", "NODEIF": "", "GET": "",
     "FILES": "- slicecheck.py.txt and rules.json.txt. Before Rule 2, save copies named slicecheck.py and rules.json in your working folder."
   }
 }

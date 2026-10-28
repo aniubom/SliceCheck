@@ -19,7 +19,13 @@ You need: a ChatGPT plan that lets you create GPTs, and the three files in [`sli
 
 Paste a sample ticket from the repo's `examples/` folder, for example `07-untestable-ac-typos-jira.md`. A correct result has Must Fix findings MF-05 and MF-06 and the verdict "🔴 Needs attention: MF-05, MF-06". Check `examples/expected.yaml` for every sample's expected result.
 
-If you get "SliceCheck couldn't run here" instead of a review, the code tool didn't run the scripts. Check that Code Interpreter is on and both files are uploaded.
+If the review ends with **"⚠️ Not verified: no code tool."**, SliceCheck used the manual fallback. Check that **Code Interpreter & Data Analysis** is on and both files are uploaded, then start a fresh preview and try again.
+
+A **"⚠️ Not verified: <problem>"** warning can also mean verification still failed after the correction attempts. The review has not passed verification; address the reported problem before relying on it.
+
+If a code tool is available but neither runtime works, the warning says **"no working Python or Node runtime"** instead. Missing uploaded files or a command that still fails after a setup correction should produce a setup-error message, without a review or verdict. Those problems should not be described as "no code tool."
+
+When testing the setup, inspect the code execution details: both the engine's `prompt` and `verify` commands must run, and `verify` must return PASS. The expected findings alone do not prove verification happened.
 
 ## Your team's rules
 

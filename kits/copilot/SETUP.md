@@ -23,7 +23,15 @@ Copilot only accepts certain file types as knowledge (.txt is one), so the engin
 
 Paste a sample ticket from the repo's `examples/` folder, for example `07-untestable-ac-typos-jira.md`. A correct result has Must Fix findings MF-05 and MF-06 and the verdict "🔴 Needs attention: MF-05, MF-06". Every sample's expected result is in `examples/expected.yaml`.
 
-**If you get "SliceCheck couldn't run here" instead of a review:** the code interpreter didn't run the uploaded engine. Check that **Create documents, charts, and code** is on and both `.txt` files are uploaded. Some company settings limit what the code interpreter can do. SliceCheck won't guess: it only shows reviews its scripts have checked. If your company blocks the code interpreter, use the no-setup prompt in `copilot-prompt.md` instead.
+If the review ends with **"⚠️ Not verified: no code tool."**, SliceCheck used the manual fallback. Check that **Create documents, charts, and code** is on and both `.txt` files are uploaded. Some company settings limit what the code interpreter can do. Start a fresh conversation after changing the setup.
+
+A **"⚠️ Not verified: <problem>"** warning can also mean verification still failed after the correction attempts. The review has not passed verification; address the reported problem before relying on it.
+
+If a code tool is available but neither runtime works, the warning says **"no working Python or Node runtime"** instead. Missing uploaded files or a command that still fails after a setup correction should produce a setup-error message, without a review or verdict. Those problems should not be described as "no code tool."
+
+When testing the setup, inspect the code execution details where available: both the engine's `prompt` and `verify` commands must run, and `verify` must return PASS. The expected findings alone do not prove verification happened.
+
+If your company blocks code execution, the agent can still review manually with the warning. The prompt-only option in `copilot-prompt.md` is also available; it does not run or verify the scripts.
 
 ## Your team's rules
 
